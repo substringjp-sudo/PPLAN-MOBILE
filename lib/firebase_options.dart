@@ -23,20 +23,11 @@ class DefaultFirebaseOptions {
       case TargetPlatform.android:
         return android;
       case TargetPlatform.iOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for ios - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return ios;
       case TargetPlatform.macOS:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for macos - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return macos;
       case TargetPlatform.windows:
-        throw UnsupportedError(
-          'DefaultFirebaseOptions have not been configured for windows - '
-          'you can reconfigure this by running the FlutterFire CLI again.',
-        );
+        return windows;
       case TargetPlatform.linux:
         throw UnsupportedError(
           'DefaultFirebaseOptions have not been configured for linux - '
@@ -61,9 +52,40 @@ class DefaultFirebaseOptions {
 
   static const FirebaseOptions android = FirebaseOptions(
     apiKey: 'AIzaSyB0q2KQApRaxH_0hvpbetPzHLDOuBHqXuk',
-    appId: '1:215166996224:android:04ac965368872663e32de5',
+    appId: '1:215166996224:android:b99bc348be16cbb7e32de5',
     messagingSenderId: '215166996224',
     projectId: 'pplan-52a07',
     storageBucket: 'pplan-52a07.firebasestorage.app',
   );
+
+  static const FirebaseOptions macos = FirebaseOptions(
+    apiKey: 'AIzaSyDO0ixUIUdHXtel76J7o2mD3Uce7FRTrwQ',
+    appId: '1:215166996224:ios:6878864c16daea93e32de5',
+    messagingSenderId: '215166996224',
+    projectId: 'pplan-52a07',
+    storageBucket: 'pplan-52a07.firebasestorage.app',
+    iosClientId: '215166996224-q0gjl22cni7eiprfm1qv8l7e3e0g1nus.apps.googleusercontent.com',
+    iosBundleId: 'com.substring.pplan.mobile',
+  );
+
+  static const FirebaseOptions ios = FirebaseOptions(
+    apiKey: 'AIzaSyDO0ixUIUdHXtel76J7o2mD3Uce7FRTrwQ',
+    appId: '1:215166996224:ios:6878864c16daea93e32de5',
+    messagingSenderId: '215166996224',
+    projectId: 'pplan-52a07',
+    storageBucket: 'pplan-52a07.firebasestorage.app',
+    iosClientId: '215166996224-q0gjl22cni7eiprfm1qv8l7e3e0g1nus.apps.googleusercontent.com',
+    iosBundleId: 'com.substring.pplan.mobile',
+  );
+
+  static const FirebaseOptions windows = FirebaseOptions(
+    apiKey: 'AIzaSyBNNoaIfNhxqykE9QPoNZHVcFhq8nrxq-c',
+    appId: '1:215166996224:web:451fa4b2ac21761fe32de5',
+    messagingSenderId: '215166996224',
+    projectId: 'pplan-52a07',
+    authDomain: 'pplan-52a07.firebaseapp.com',
+    storageBucket: 'pplan-52a07.firebasestorage.app',
+    measurementId: 'G-QP0SRTSZ29',
+  );
+
 }
