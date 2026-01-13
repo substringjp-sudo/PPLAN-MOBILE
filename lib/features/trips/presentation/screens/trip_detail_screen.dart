@@ -1,169 +1,223 @@
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:mobile/app/theme.dart';
 import 'package:mobile/shared/data/local/collections/activity.dart';
 import 'package:mobile/shared/data/local/collections/trip.dart';
 import 'package:timeline_tile/timeline_tile.dart';
 
-// Provider for the main trip details
-final tripDetailProvider = StreamProvider.family<Trip, String>((ref, tripId) {
+// Provider to fetch a single trip with its activities
+final tripDetailProvider = FutureProvider.family<Trip, String>((ref, tripId) async {
   final firestore = FirebaseFirestore.instance;
-  final docRef = firestore.collection('trips').doc(tripId);
-  return docRef.snapshots().map((snapshot) {
-    final data = snapshot.data();
-    if (data == null) throw Exception('Trip not found!');
-    return Trip()
-      ..remoteId = snapshot.id
-      ..name = data['name'] ?? 'Unnamed Trip';
-  });
-});
+  final tripDoc = await firestore.collection('trips').doc(tripId).get();
 
-// Provider for the activities within a trip
-final tripActivitiesProvider = StreamProvider.family<List<Activity>, String>((ref, tripId) {
-  final firestore = FirebaseFirestore.instance;
-  final collectionRef = firestore.collection('trips').doc(tripId).collection('activities').orderBy('time');
-  return collectionRef.snapshots().map((snapshot) => snapshot.docs.map((doc) {
-        final data = doc.data();
-        return Activity()
-          ..remoteId = doc.id
-          ..name = data['name'] ?? 'Unnamed Activity'
-          ..time = data['time']
-          ..category = data['category'];
-      }).toList());
+  if (!tripDoc.exists) {
+    throw Exception('Trip not found');
+  }
+
+  final tripData = tripDoc.data()!;
+  tripData['id'] = tripDoc.id;
+
+  // Fetch activities from the subcollection
+  final activitiesSnapshot = await firestore.collection('trips').doc(tripId).collection('activities').get();
+  final activities = activitiesSnapshot.docs.map((doc) {
+    final activityData = doc.data();
+    activityData['id'] = doc.id;
+    return Activity.fromJson(activityData);
+  }).toList();
+
+  final trip = Trip.fromJson(tripData);
+  trip.activities = activities; // Manually assign the fetched activities
+
+  return trip;
 });
 
 class TripDetailScreen extends ConsumerWidget {
-  final String tripId;
+  final String? tripId;
 
   const TripDetailScreen({super.key, required this.tripId});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
-    final tripAsync = ref.watch(tripDetailProvider(tripId));
-    final activitiesAsync = ref.watch(tripActivitiesProvider(tripId));
+    if (tripId == null) {
+      return const Scaffold(body: Center(child: Text('Trip ID is missing.')));
+    }
+
+    final tripAsyncValue = ref.watch(tripDetailProvider(tripId!));
+
+    return tripAsyncValue.when(
+      data: (trip) => _TripDetailView(trip: trip), // We pass the loaded trip to the actual UI widget
+      loading: () => const Scaffold(body: Center(child: CircularProgressIndicator())),
+      error: (err, stack) => Scaffold(body: Center(child: Text('Error: $err'))),
+    );
+  }
+}
+
+// This widget contains the actual UI, once the trip data is successfully loaded.
+class _TripDetailView extends StatelessWidget {
+  final Trip trip;
+
+  const _TripDetailView({required this.trip});
+
+  @override
+  Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final activitiesByDay = _groupActivitiesByDay(trip.activities);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
-      body: tripAsync.when(
-        data: (trip) => CustomScrollView(
-          slivers: <Widget>[
-            SliverAppBar(
-              expandedHeight: 250.0,
-              floating: false,
-              pinned: true,
-              stretch: true,
-              backgroundColor: AppColors.surface,
-              flexibleSpace: FlexibleSpaceBar(
-                centerTitle: true,
-                title: Text(trip.name, style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold, fontSize: 18)),
-                background: Image.network('https://source.unsplash.com/random/800x600?travel,landscape', fit: BoxFit.cover),
-              ),
-            ),
-            activitiesAsync.when(
-              data: (activities) {
-                if (activities.isEmpty) {
-                  return const SliverToBoxAdapter(child: Center(child: Padding(padding: EdgeInsets.all(20.0), child: Text("No activities planned yet."))));
+      body: CustomScrollView(
+        slivers: [
+          _buildSliverAppBar(trip, textTheme),
+          SliverList(
+            delegate: SliverChildBuilderDelegate(
+              (context, index) {
+                if (activitiesByDay.isEmpty) {
+                  return const Center(child: Padding(padding: EdgeInsets.all(48.0), child: Text('No activities yet.', style: TextStyle(color: AppColors.mutedText))));
                 }
-                // For now, we assume all activities are for one day.
-                // Grouping by date would be the next step.
-                return SliverPadding(
-                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
-                  sliver: SliverList(
-                    delegate: SliverChildBuilderDelegate(
-                      (context, index) {
-                        if (index == 0) return const _DayHeader(day: 1);
-                        final activity = activities[index -1];
-                        return _TimelineActivityItem(
-                          activity: activity,
-                          isFirst: index == 1,
-                          isLast: index == activities.length,
-                        );
-                      },
-                      childCount: activities.length + 1,
-                    ),
-                  ),
-                );
+                final day = activitiesByDay.keys.elementAt(index);
+                final activities = activitiesByDay[day]!;
+                return _buildDayTimeline(context, day, activities, textTheme);
               },
-              loading: () => const SliverToBoxAdapter(child: Center(child: CircularProgressIndicator())),
-              error: (err, stack) => SliverToBoxAdapter(child: Center(child: Text('Error loading activities: $err'))),
+              childCount: activitiesByDay.isEmpty ? 1 : activitiesByDay.length,
             ),
-          ],
-        ),
-        loading: () => const Center(child: CircularProgressIndicator()),
-        error: (error, stack) => Center(child: Text('Error: $error')),
+          ),
+        ],
       ),
     );
   }
-}
 
-class _DayHeader extends StatelessWidget {
-  final int day;
-  const _DayHeader({required this.day});
-
-  @override
-  Widget build(BuildContext context) {
-    return Container(
-      padding: const EdgeInsets.symmetric(vertical: 24.0),
-      child: Row(children: [
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(color: AppColors.primary, borderRadius: BorderRadius.circular(20)),
-          child: Text('Day $day', style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold)),
+  Widget _buildSliverAppBar(Trip trip, TextTheme textTheme) {
+    return SliverAppBar(
+      expandedHeight: 250.0,
+      pinned: true,
+      stretch: true,
+      backgroundColor: AppColors.surface,
+      elevation: 0,
+      flexibleSpace: FlexibleSpaceBar(
+        centerTitle: true,
+        title: Text(
+          trip.name,
+          style: textTheme.titleLarge?.copyWith(color: AppColors.textWhite, fontWeight: FontWeight.bold),
         ),
-      ]),
+        background: trip.coverImageUrl != null
+            ? Image.network(
+                trip.coverImageUrl!,
+                fit: BoxFit.cover,
+                color: Colors.black.withOpacity(0.4),
+                colorBlendMode: BlendMode.darken,
+              )
+            : Container(color: AppColors.primary.withOpacity(0.5)),
+      ),
     );
   }
-}
 
-class _TimelineActivityItem extends StatelessWidget {
-  final Activity activity;
-  final bool isFirst;
-  final bool isLast;
-
-  const _TimelineActivityItem({required this.activity, this.isFirst = false, this.isLast = false});
-
-  IconData _getIconForCategory(String? category) {
-    switch (category) {
-      case 'camera': return LucideIcons.camera;
-      case 'fork': return LucideIcons.utensils;
-      case 'plane': return LucideIcons.plane;
-      default: return LucideIcons.pencil;
+  Map<int, List<Activity>> _groupActivitiesByDay(List<Activity> activities) {
+    final map = <int, List<Activity>>{};
+    for (var activity in activities) {
+      if (!map.containsKey(activity.day)) {
+        map[activity.day] = [];
+      }
+      map[activity.day]!.add(activity);
     }
+    map.forEach((day, activityList) {
+      activityList.sort((a, b) => a.startTime.compareTo(b.startTime));
+    });
+    return map;
   }
 
-  @override
-  Widget build(BuildContext context) {
+  Widget _buildDayTimeline(BuildContext context, int day, List<Activity> activities, TextTheme textTheme) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 24.0),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          _buildDayHeader(day, textTheme),
+          const SizedBox(height: 24),
+          ...activities.map((activity) => _buildActivityTile(context, activity, textTheme, activities.indexOf(activity) == activities.length - 1)),
+        ],
+      ),
+    );
+  }
+
+   Widget _buildDayHeader(int day, TextTheme textTheme) {
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+      decoration: BoxDecoration(
+        color: AppColors.primary,
+        borderRadius: BorderRadius.circular(12),
+      ),
+      child: Text(
+        'Day $day',
+        style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, color: AppColors.textWhite),
+      ),
+    );
+  }
+
+  Widget _buildActivityTile(BuildContext context, Activity activity, TextTheme textTheme, bool isLast) {
     return TimelineTile(
       alignment: TimelineAlign.manual,
       lineXY: 0.25,
-      isFirst: isFirst,
       isLast: isLast,
       beforeLineStyle: const LineStyle(color: AppColors.mutedText, thickness: 2),
-      indicatorStyle: const IndicatorStyle(
+      indicatorStyle: IndicatorStyle(
         width: 40,
         height: 40,
-        indicator: CircleAvatar(backgroundColor: AppColors.surface, child: Icon(LucideIcons.check, color: AppColors.primary, size: 20)),
+        indicator: _buildActivityIcon(activity.category),
+        padding: const EdgeInsets.all(4),
       ),
-      endChild: Padding(
-        padding: const EdgeInsets.fromLTRB(16, 10, 10, 10),
-        child: Container(
-          padding: const EdgeInsets.all(16),
-          decoration: BoxDecoration(
-            color: AppColors.surface,
-            borderRadius: BorderRadius.circular(12),
-            boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.1), blurRadius: 10, offset: const Offset(0, 4))],
-          ),
-          child: Row(children: [
-            Icon(_getIconForCategory(activity.category), color: AppColors.primary, size: 24),
-            const SizedBox(width: 12),
-            Expanded(child: Text(activity.name, style: const TextStyle(color: AppColors.text, fontSize: 16))),
-          ]),
+      endChild: _buildActivityCard(context, activity, textTheme),
+    );
+  }
+
+  Widget _buildActivityIcon(ActivityCategory category) {
+    IconData icon;
+    switch (category) {
+      case ActivityCategory.transport:
+        icon = LucideIcons.plane;
+        break;
+      case ActivityCategory.accommodation:
+        icon = LucideIcons.bed;
+        break;
+      case ActivityCategory.food:
+        icon = LucideIcons.utensils;
+        break;
+      case ActivityCategory.attraction:
+        icon = LucideIcons.camera;
+        break;
+      default:
+        icon = LucideIcons.activity;
+    }
+    return Container(
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        color: AppColors.primary.withOpacity(0.1),
+      ),
+      child: Center(child: Icon(icon, size: 20, color: AppColors.primary)),
+    );
+  }
+
+  Widget _buildActivityCard(BuildContext context, Activity activity, TextTheme textTheme) {
+    return Padding(
+      padding: const EdgeInsets.only(left: 16, top: 0, bottom: 16),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          color: AppColors.surface,
+          borderRadius: BorderRadius.circular(16),
+        ),
+        child: Row(
+          children: [
+            Expanded(child: Text(activity.name, style: textTheme.bodyLarge?.copyWith(color: AppColors.textWhite))),
+            const SizedBox(width: 8),
+            Text(
+              activity.startTime,
+              style: textTheme.bodySmall?.copyWith(color: AppColors.mutedText),
+            ),
+          ],
         ),
       ),
-      startChild: Center(child: Text(activity.time ?? '', style: const TextStyle(color: AppColors.mutedText, fontWeight: FontWeight.bold))),
     );
   }
 }

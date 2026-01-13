@@ -1,104 +1,108 @@
 
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:mobile/app/theme.dart';
 import 'package:mobile/features/home/presentation/screens/home_screen.dart';
+import 'package:mobile/features/likes/presentation/screens/likes_screen.dart';
+import 'package:mobile/features/profile/presentation/screens/profile_screen.dart';
 import 'package:mobile/features/trips/presentation/screens/my_trips_screen.dart';
 
-class MainNavigationScreen extends StatefulWidget {
+// This provider will hold the currently selected tab index
+final selectedPageIndexProvider = StateProvider<int>((ref) => 0);
+
+class MainNavigationScreen extends ConsumerWidget {
   const MainNavigationScreen({super.key});
 
-  @override
-  State<MainNavigationScreen> createState() => _MainNavigationScreenState();
-}
-
-class _MainNavigationScreenState extends State<MainNavigationScreen> {
-  int _selectedIndex = 0;
-
-  static const List<Widget> _widgetOptions = <Widget>[
+  // List of pages to be displayed in the navigation
+  final List<Widget> _pages = const [
     HomeScreen(),
-    Text('Map Screen'),
-    MyTripsScreen(), // Changed from Text('Likes Screen')
-    Text('Profile Screen'),
+    MyTripsScreen(),
+    LikesScreen(), 
+    ProfileScreen(),
   ];
 
-  void _onItemTapped(int index) {
-    setState(() {
-      _selectedIndex = index;
-    });
-  }
-
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final selectedPageIndex = ref.watch(selectedPageIndexProvider);
+
     return Scaffold(
-      body: Center(
-        child: _widgetOptions.elementAt(_selectedIndex),
+      extendBody: true, // Allows the body to go behind the bottom app bar
+      body: IndexedStack(
+        index: selectedPageIndex,
+        children: _pages,
       ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: _buildFab(),
       bottomNavigationBar: BottomAppBar(
         shape: const CircularNotchedRectangle(),
         notchMargin: 8.0,
         color: AppColors.surface,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceAround,
-          children: <Widget>[
-            IconButton(
-              icon: Icon(LucideIcons.home,
-                  color: _selectedIndex == 0
-                      ? AppColors.primary
-                      : AppColors.mutedText),
-              onPressed: () => _onItemTapped(0),
-            ),
-            IconButton(
-              icon: Icon(LucideIcons.map,
-                  color: _selectedIndex == 1
-                      ? AppColors.primary
-                      : AppColors.mutedText),
-              onPressed: () => _onItemTapped(1),
-            ),
-            const SizedBox(width: 40), // The space for the FAB
-            IconButton(
-              icon: Icon(LucideIcons.heart,
-                  color: _selectedIndex == 2
-                      ? AppColors.primary
-                      : AppColors.mutedText),
-              onPressed: () => _onItemTapped(2),
-            ),
-            IconButton(
-              icon: Icon(LucideIcons.user,
-                  color: _selectedIndex == 3
-                      ? AppColors.primary
-                      : AppColors.mutedText),
-              onPressed: () => _onItemTapped(3),
-            ),
-          ],
-        ),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {},
-        elevation: 4.0, // Added for a subtle shadow
-        highlightElevation: 12.0,
-        child: Container(
-          width: 64,
-          height: 64,
-          decoration: const BoxDecoration(
-            shape: BoxShape.circle,
-            gradient: LinearGradient(
-              colors: [AppColors.primary, Color(0xFF8B5CF6)], // Consistent with spec
-              begin: Alignment.topLeft,
-              end: Alignment.bottomRight,
-            ),
-            boxShadow: [
-              BoxShadow(
-                color: AppColors.primary.withOpacity(0.4),
-                blurRadius: 20,
-                offset: Offset(0, 4),
-              )
-            ]
+        child: SizedBox(
+          height: 60, // Standard height for BottomAppBar
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: <Widget>[
+              // Left side icons
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    _buildNavIcon(context, ref, icon: LucideIcons.house, index: 0, label: 'Home'),
+                    _buildNavIcon(context, ref, icon: LucideIcons.map, index: 1, label: 'My Trips'),
+                  ],
+                ),
+              ),
+              // The middle space for the FAB
+              const SizedBox(width: 80),
+              // Right side icons
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    _buildNavIcon(context, ref, icon: LucideIcons.heart, index: 2, label: 'Likes'),
+                    _buildNavIcon(context, ref, icon: LucideIcons.user, index: 3, label: 'Profile'),
+                  ],
+                ),
+              ),
+            ],
           ),
-          child: const Icon(LucideIcons.pencil, color: Colors.white, size: 28),
         ),
       ),
+    );
+  }
+
+  Widget _buildFab() {
+    return Container(
+      width: 64,
+      height: 64,
+      decoration: BoxDecoration(
+        shape: BoxShape.circle,
+        gradient: const LinearGradient(
+          colors: [AppColors.primary, AppColors.secondary],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        boxShadow: [
+          BoxShadow(
+            color: AppColors.primary.withOpacity(0.4),
+            blurRadius: 20,
+            offset: const Offset(0, 4),
+          ),
+        ],
+      ),
+      child: const Icon(LucideIcons.pencil, color: Colors.white, size: 28),
+    );
+  }
+
+  Widget _buildNavIcon(BuildContext context, WidgetRef ref, {required IconData icon, required int index, required String label}) {
+    final selectedPageIndex = ref.watch(selectedPageIndexProvider);
+    final isSelected = selectedPageIndex == index;
+
+    return IconButton(
+      icon: Icon(icon, color: isSelected ? AppColors.primary : AppColors.mutedText),
+      onPressed: () => ref.read(selectedPageIndexProvider.notifier).state = index,
+      tooltip: label,
     );
   }
 }

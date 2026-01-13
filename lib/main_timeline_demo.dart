@@ -14,7 +14,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Travel Timeline Logger',
       theme: ThemeData(primarySwatch: Colors.blue, useMaterial3: true),
-      home: const TimelineScreen(),
+      home: TimelineScreen(tripId: '1'),
     );
   }
 }

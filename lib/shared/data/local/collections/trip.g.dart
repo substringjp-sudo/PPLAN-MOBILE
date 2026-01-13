@@ -177,7 +177,12 @@ int _tripEstimateSize(
     }
   }
   bytesCount += 3 + object.name.length * 3;
-  bytesCount += 3 + object.remoteId.length * 3;
+  {
+    final value = object.remoteId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.status.length * 3;
   {
     final value = object.tripType;
@@ -228,7 +233,7 @@ Trip _tripDeserialize(
   object.isDeletedLocally = reader.readBool(offsets[3]);
   object.isSynced = reader.readBool(offsets[4]);
   object.name = reader.readString(offsets[5]);
-  object.remoteId = reader.readString(offsets[6]);
+  object.remoteId = reader.readStringOrNull(offsets[6]);
   object.startDate = reader.readDateTimeOrNull(offsets[7]);
   object.status = reader.readString(offsets[8]);
   object.tripType = reader.readStringOrNull(offsets[9]);
@@ -257,7 +262,7 @@ P _tripDeserializeProp<P>(
     case 5:
       return (reader.readString(offset)) as P;
     case 6:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 7:
       return (reader.readDateTimeOrNull(offset)) as P;
     case 8:
@@ -286,38 +291,38 @@ void _tripAttach(IsarCollection<dynamic> col, Id id, Trip object) {
 }
 
 extension TripByIndex on IsarCollection<Trip> {
-  Future<Trip?> getByRemoteId(String remoteId) {
+  Future<Trip?> getByRemoteId(String? remoteId) {
     return getByIndex(r'remoteId', [remoteId]);
   }
 
-  Trip? getByRemoteIdSync(String remoteId) {
+  Trip? getByRemoteIdSync(String? remoteId) {
     return getByIndexSync(r'remoteId', [remoteId]);
   }
 
-  Future<bool> deleteByRemoteId(String remoteId) {
+  Future<bool> deleteByRemoteId(String? remoteId) {
     return deleteByIndex(r'remoteId', [remoteId]);
   }
 
-  bool deleteByRemoteIdSync(String remoteId) {
+  bool deleteByRemoteIdSync(String? remoteId) {
     return deleteByIndexSync(r'remoteId', [remoteId]);
   }
 
-  Future<List<Trip?>> getAllByRemoteId(List<String> remoteIdValues) {
+  Future<List<Trip?>> getAllByRemoteId(List<String?> remoteIdValues) {
     final values = remoteIdValues.map((e) => [e]).toList();
     return getAllByIndex(r'remoteId', values);
   }
 
-  List<Trip?> getAllByRemoteIdSync(List<String> remoteIdValues) {
+  List<Trip?> getAllByRemoteIdSync(List<String?> remoteIdValues) {
     final values = remoteIdValues.map((e) => [e]).toList();
     return getAllByIndexSync(r'remoteId', values);
   }
 
-  Future<int> deleteAllByRemoteId(List<String> remoteIdValues) {
+  Future<int> deleteAllByRemoteId(List<String?> remoteIdValues) {
     final values = remoteIdValues.map((e) => [e]).toList();
     return deleteAllByIndex(r'remoteId', values);
   }
 
-  int deleteAllByRemoteIdSync(List<String> remoteIdValues) {
+  int deleteAllByRemoteIdSync(List<String?> remoteIdValues) {
     final values = remoteIdValues.map((e) => [e]).toList();
     return deleteAllByIndexSync(r'remoteId', values);
   }
@@ -429,7 +434,28 @@ extension TripQueryWhere on QueryBuilder<Trip, Trip, QWhereClause> {
     });
   }
 
-  QueryBuilder<Trip, Trip, QAfterWhereClause> remoteIdEqualTo(String remoteId) {
+  QueryBuilder<Trip, Trip, QAfterWhereClause> remoteIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'remoteId',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterWhereClause> remoteIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'remoteId',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterWhereClause> remoteIdEqualTo(
+      String? remoteId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'remoteId',
@@ -439,7 +465,7 @@ extension TripQueryWhere on QueryBuilder<Trip, Trip, QWhereClause> {
   }
 
   QueryBuilder<Trip, Trip, QAfterWhereClause> remoteIdNotEqualTo(
-      String remoteId) {
+      String? remoteId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -1230,8 +1256,24 @@ extension TripQueryFilter on QueryBuilder<Trip, Trip, QFilterCondition> {
     });
   }
 
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> remoteIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
+  QueryBuilder<Trip, Trip, QAfterFilterCondition> remoteIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
   QueryBuilder<Trip, Trip, QAfterFilterCondition> remoteIdEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1244,7 +1286,7 @@ extension TripQueryFilter on QueryBuilder<Trip, Trip, QFilterCondition> {
   }
 
   QueryBuilder<Trip, Trip, QAfterFilterCondition> remoteIdGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1259,7 +1301,7 @@ extension TripQueryFilter on QueryBuilder<Trip, Trip, QFilterCondition> {
   }
 
   QueryBuilder<Trip, Trip, QAfterFilterCondition> remoteIdLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1274,8 +1316,8 @@ extension TripQueryFilter on QueryBuilder<Trip, Trip, QFilterCondition> {
   }
 
   QueryBuilder<Trip, Trip, QAfterFilterCondition> remoteIdBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -2348,7 +2390,7 @@ extension TripQueryProperty on QueryBuilder<Trip, Trip, QQueryProperty> {
     });
   }
 
-  QueryBuilder<Trip, String, QQueryOperations> remoteIdProperty() {
+  QueryBuilder<Trip, String?, QQueryOperations> remoteIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'remoteId');
     });

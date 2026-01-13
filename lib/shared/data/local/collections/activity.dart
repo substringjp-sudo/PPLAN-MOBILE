@@ -3,21 +3,45 @@ import 'package:isar/isar.dart';
 
 part 'activity.g.dart';
 
+enum ActivityCategory {
+  transport,
+  accommodation,
+  food,
+  attraction,
+  other,
+}
+
 @collection
 class Activity {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)
-  late String remoteId; // Firestore Document ID
+  String? remoteId; // Firestore Document ID
 
   late String name;
 
-  String? time; // e.g., "09:00"
+  @enumerated
+  late ActivityCategory category;
 
-  String? category; // e.g., "camera", "fork", "plane"
+  late int day; // Relative day number in the trip
 
-  DateTime? date; // To group by day
+  late String startTime; // "HH:mm"
 
   @Index()
-  late String tripId;
+  String? tripId; // remoteId of the parent trip
+
+  Activity();
+
+  factory Activity.fromJson(Map<String, dynamic> json) {
+    return Activity()
+      ..remoteId = json['id'] as String?
+      ..name = json['name'] as String
+      ..day = json['day'] as int
+      ..startTime = json['startTime'] as String
+      ..tripId = json['tripId'] as String?
+      ..category = ActivityCategory.values.firstWhere(
+        (e) => e.toString() == 'ActivityCategory.${json['category']}',
+        orElse: () => ActivityCategory.other,
+      );
+  }
 }

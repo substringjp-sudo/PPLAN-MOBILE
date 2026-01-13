@@ -44,20 +44,26 @@ class MainNavigationScreen extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: <Widget>[
               // Left side icons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.start,
-                children: <Widget>[
-                  _buildNavIcon(context, ref, icon: LucideIcons.home, index: 0),
-                  _buildNavIcon(context, ref, icon: LucideIcons.map, index: 1),
-                ],
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    _buildNavIcon(context, ref, icon: LucideIcons.house, index: 0, label: 'Home'),
+                    _buildNavIcon(context, ref, icon: LucideIcons.map, index: 1, label: 'My Trips'),
+                  ],
+                ),
               ),
+              // The middle space for the FAB
+              const SizedBox(width: 80),
               // Right side icons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: <Widget>[
-                  _buildNavIcon(context, ref, icon: LucideIcons.heart, index: 2),
-                  _buildNavIcon(context, ref, icon: LucideIcons.user, index: 3),
-                ],
+              Expanded(
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: <Widget>[
+                    _buildNavIcon(context, ref, icon: LucideIcons.heart, index: 2, label: 'Likes'),
+                    _buildNavIcon(context, ref, icon: LucideIcons.user, index: 3, label: 'Profile'),
+                  ],
+                ),
               ),
             ],
           ),
@@ -89,14 +95,14 @@ class MainNavigationScreen extends ConsumerWidget {
     );
   }
 
-  Widget _buildNavIcon(BuildContext context, WidgetRef ref, {required IconData icon, required int index}) {
+  Widget _buildNavIcon(BuildContext context, WidgetRef ref, {required IconData icon, required int index, required String label}) {
     final selectedPageIndex = ref.watch(selectedPageIndexProvider);
     final isSelected = selectedPageIndex == index;
 
     return IconButton(
       icon: Icon(icon, color: isSelected ? AppColors.primary : AppColors.mutedText),
       onPressed: () => ref.read(selectedPageIndexProvider.notifier).state = index,
-      tooltip: '${icon.toString()}',
+      tooltip: label,
     );
   }
 }

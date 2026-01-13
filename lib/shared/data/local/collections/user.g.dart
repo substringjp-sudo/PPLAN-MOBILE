@@ -71,6 +71,19 @@ const UserSchema = CollectionSchema(
           caseSensitive: true,
         )
       ],
+    ),
+    r'username': IndexSchema(
+      id: -2899563114555695793,
+      name: r'username',
+      unique: true,
+      replace: false,
+      properties: [
+        IndexPropertySchema(
+          name: r'username',
+          type: IndexType.hash,
+          caseSensitive: true,
+        )
+      ],
     )
   },
   links: {},
@@ -94,7 +107,12 @@ int _userEstimateSize(
       bytesCount += 3 + value.length * 3;
     }
   }
-  bytesCount += 3 + object.remoteId.length * 3;
+  {
+    final value = object.remoteId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   bytesCount += 3 + object.username.length * 3;
   return bytesCount;
 }
@@ -126,7 +144,7 @@ User _userDeserialize(
   object.id = id;
   object.name = reader.readString(offsets[2]);
   object.profilePictureUrl = reader.readStringOrNull(offsets[3]);
-  object.remoteId = reader.readString(offsets[4]);
+  object.remoteId = reader.readStringOrNull(offsets[4]);
   object.tripsCount = reader.readLong(offsets[5]);
   object.username = reader.readString(offsets[6]);
   return object;
@@ -148,7 +166,7 @@ P _userDeserializeProp<P>(
     case 3:
       return (reader.readStringOrNull(offset)) as P;
     case 4:
-      return (reader.readString(offset)) as P;
+      return (reader.readStringOrNull(offset)) as P;
     case 5:
       return (reader.readLong(offset)) as P;
     case 6:
@@ -171,38 +189,38 @@ void _userAttach(IsarCollection<dynamic> col, Id id, User object) {
 }
 
 extension UserByIndex on IsarCollection<User> {
-  Future<User?> getByRemoteId(String remoteId) {
+  Future<User?> getByRemoteId(String? remoteId) {
     return getByIndex(r'remoteId', [remoteId]);
   }
 
-  User? getByRemoteIdSync(String remoteId) {
+  User? getByRemoteIdSync(String? remoteId) {
     return getByIndexSync(r'remoteId', [remoteId]);
   }
 
-  Future<bool> deleteByRemoteId(String remoteId) {
+  Future<bool> deleteByRemoteId(String? remoteId) {
     return deleteByIndex(r'remoteId', [remoteId]);
   }
 
-  bool deleteByRemoteIdSync(String remoteId) {
+  bool deleteByRemoteIdSync(String? remoteId) {
     return deleteByIndexSync(r'remoteId', [remoteId]);
   }
 
-  Future<List<User?>> getAllByRemoteId(List<String> remoteIdValues) {
+  Future<List<User?>> getAllByRemoteId(List<String?> remoteIdValues) {
     final values = remoteIdValues.map((e) => [e]).toList();
     return getAllByIndex(r'remoteId', values);
   }
 
-  List<User?> getAllByRemoteIdSync(List<String> remoteIdValues) {
+  List<User?> getAllByRemoteIdSync(List<String?> remoteIdValues) {
     final values = remoteIdValues.map((e) => [e]).toList();
     return getAllByIndexSync(r'remoteId', values);
   }
 
-  Future<int> deleteAllByRemoteId(List<String> remoteIdValues) {
+  Future<int> deleteAllByRemoteId(List<String?> remoteIdValues) {
     final values = remoteIdValues.map((e) => [e]).toList();
     return deleteAllByIndex(r'remoteId', values);
   }
 
-  int deleteAllByRemoteIdSync(List<String> remoteIdValues) {
+  int deleteAllByRemoteIdSync(List<String?> remoteIdValues) {
     final values = remoteIdValues.map((e) => [e]).toList();
     return deleteAllByIndexSync(r'remoteId', values);
   }
@@ -221,6 +239,58 @@ extension UserByIndex on IsarCollection<User> {
 
   List<Id> putAllByRemoteIdSync(List<User> objects, {bool saveLinks = true}) {
     return putAllByIndexSync(r'remoteId', objects, saveLinks: saveLinks);
+  }
+
+  Future<User?> getByUsername(String username) {
+    return getByIndex(r'username', [username]);
+  }
+
+  User? getByUsernameSync(String username) {
+    return getByIndexSync(r'username', [username]);
+  }
+
+  Future<bool> deleteByUsername(String username) {
+    return deleteByIndex(r'username', [username]);
+  }
+
+  bool deleteByUsernameSync(String username) {
+    return deleteByIndexSync(r'username', [username]);
+  }
+
+  Future<List<User?>> getAllByUsername(List<String> usernameValues) {
+    final values = usernameValues.map((e) => [e]).toList();
+    return getAllByIndex(r'username', values);
+  }
+
+  List<User?> getAllByUsernameSync(List<String> usernameValues) {
+    final values = usernameValues.map((e) => [e]).toList();
+    return getAllByIndexSync(r'username', values);
+  }
+
+  Future<int> deleteAllByUsername(List<String> usernameValues) {
+    final values = usernameValues.map((e) => [e]).toList();
+    return deleteAllByIndex(r'username', values);
+  }
+
+  int deleteAllByUsernameSync(List<String> usernameValues) {
+    final values = usernameValues.map((e) => [e]).toList();
+    return deleteAllByIndexSync(r'username', values);
+  }
+
+  Future<Id> putByUsername(User object) {
+    return putByIndex(r'username', object);
+  }
+
+  Id putByUsernameSync(User object, {bool saveLinks = true}) {
+    return putByIndexSync(r'username', object, saveLinks: saveLinks);
+  }
+
+  Future<List<Id>> putAllByUsername(List<User> objects) {
+    return putAllByIndex(r'username', objects);
+  }
+
+  List<Id> putAllByUsernameSync(List<User> objects, {bool saveLinks = true}) {
+    return putAllByIndexSync(r'username', objects, saveLinks: saveLinks);
   }
 }
 
@@ -298,7 +368,28 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
     });
   }
 
-  QueryBuilder<User, User, QAfterWhereClause> remoteIdEqualTo(String remoteId) {
+  QueryBuilder<User, User, QAfterWhereClause> remoteIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'remoteId',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterWhereClause> remoteIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'remoteId',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterWhereClause> remoteIdEqualTo(
+      String? remoteId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'remoteId',
@@ -308,7 +399,7 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
   }
 
   QueryBuilder<User, User, QAfterWhereClause> remoteIdNotEqualTo(
-      String remoteId) {
+      String? remoteId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -336,6 +427,50 @@ extension UserQueryWhere on QueryBuilder<User, User, QWhereClause> {
               indexName: r'remoteId',
               lower: [],
               upper: [remoteId],
+              includeUpper: false,
+            ));
+      }
+    });
+  }
+
+  QueryBuilder<User, User, QAfterWhereClause> usernameEqualTo(String username) {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'username',
+        value: [username],
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterWhereClause> usernameNotEqualTo(
+      String username) {
+    return QueryBuilder.apply(this, (query) {
+      if (query.whereSort == Sort.asc) {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'username',
+              lower: [],
+              upper: [username],
+              includeUpper: false,
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'username',
+              lower: [username],
+              includeLower: false,
+              upper: [],
+            ));
+      } else {
+        return query
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'username',
+              lower: [username],
+              includeLower: false,
+              upper: [],
+            ))
+            .addWhereClause(IndexWhereClause.between(
+              indexName: r'username',
+              lower: [],
+              upper: [username],
               includeUpper: false,
             ));
       }
@@ -777,8 +912,24 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
     });
   }
 
+  QueryBuilder<User, User, QAfterFilterCondition> remoteIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
+  QueryBuilder<User, User, QAfterFilterCondition> remoteIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
   QueryBuilder<User, User, QAfterFilterCondition> remoteIdEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -791,7 +942,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> remoteIdGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -806,7 +957,7 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> remoteIdLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -821,8 +972,8 @@ extension UserQueryFilter on QueryBuilder<User, User, QFilterCondition> {
   }
 
   QueryBuilder<User, User, QAfterFilterCondition> remoteIdBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1356,7 +1507,7 @@ extension UserQueryProperty on QueryBuilder<User, User, QQueryProperty> {
     });
   }
 
-  QueryBuilder<User, String, QQueryOperations> remoteIdProperty() {
+  QueryBuilder<User, String?, QQueryOperations> remoteIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'remoteId');
     });

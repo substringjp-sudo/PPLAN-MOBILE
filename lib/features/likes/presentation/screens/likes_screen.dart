@@ -83,7 +83,7 @@ class LikesScreen extends ConsumerWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Text(trip.name, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.text, fontWeight: FontWeight.bold)),
+                  Text(trip.name, style: Theme.of(context).textTheme.titleMedium?.copyWith(color: AppColors.textWhite, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 8),
                    Row(
                     children: const [

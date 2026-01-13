@@ -8,14 +8,19 @@ class User {
   Id id = Isar.autoIncrement;
 
   @Index(unique: true, replace: true)
-  late String remoteId; // Firestore Document ID (which is the Firebase Auth UID)
+  String? remoteId; // Firestore Document ID
 
   late String name;
+  
+  @Index(unique: true)
   late String username;
+
   String? profilePictureUrl;
 
-  // Stats
   int tripsCount = 0;
+
   int followersCount = 0;
+
   int followingCount = 0;
+
 }

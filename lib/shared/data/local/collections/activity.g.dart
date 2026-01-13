@@ -20,12 +20,13 @@ const ActivitySchema = CollectionSchema(
     r'category': PropertySchema(
       id: 0,
       name: r'category',
-      type: IsarType.string,
+      type: IsarType.byte,
+      enumMap: _ActivitycategoryEnumValueMap,
     ),
-    r'date': PropertySchema(
+    r'day': PropertySchema(
       id: 1,
-      name: r'date',
-      type: IsarType.dateTime,
+      name: r'day',
+      type: IsarType.long,
     ),
     r'name': PropertySchema(
       id: 2,
@@ -37,9 +38,9 @@ const ActivitySchema = CollectionSchema(
       name: r'remoteId',
       type: IsarType.string,
     ),
-    r'time': PropertySchema(
+    r'startTime': PropertySchema(
       id: 4,
-      name: r'time',
+      name: r'startTime',
       type: IsarType.string,
     ),
     r'tripId': PropertySchema(
@@ -95,21 +96,20 @@ int _activityEstimateSize(
   Map<Type, List<int>> allOffsets,
 ) {
   var bytesCount = offsets.last;
-  {
-    final value = object.category;
-    if (value != null) {
-      bytesCount += 3 + value.length * 3;
-    }
-  }
   bytesCount += 3 + object.name.length * 3;
-  bytesCount += 3 + object.remoteId.length * 3;
   {
-    final value = object.time;
+    final value = object.remoteId;
     if (value != null) {
       bytesCount += 3 + value.length * 3;
     }
   }
-  bytesCount += 3 + object.tripId.length * 3;
+  bytesCount += 3 + object.startTime.length * 3;
+  {
+    final value = object.tripId;
+    if (value != null) {
+      bytesCount += 3 + value.length * 3;
+    }
+  }
   return bytesCount;
 }
 
@@ -119,11 +119,11 @@ void _activitySerialize(
   List<int> offsets,
   Map<Type, List<int>> allOffsets,
 ) {
-  writer.writeString(offsets[0], object.category);
-  writer.writeDateTime(offsets[1], object.date);
+  writer.writeByte(offsets[0], object.category.index);
+  writer.writeLong(offsets[1], object.day);
   writer.writeString(offsets[2], object.name);
   writer.writeString(offsets[3], object.remoteId);
-  writer.writeString(offsets[4], object.time);
+  writer.writeString(offsets[4], object.startTime);
   writer.writeString(offsets[5], object.tripId);
 }
 
@@ -134,13 +134,15 @@ Activity _activityDeserialize(
   Map<Type, List<int>> allOffsets,
 ) {
   final object = Activity();
-  object.category = reader.readStringOrNull(offsets[0]);
-  object.date = reader.readDateTimeOrNull(offsets[1]);
+  object.category =
+      _ActivitycategoryValueEnumMap[reader.readByteOrNull(offsets[0])] ??
+          ActivityCategory.transport;
+  object.day = reader.readLong(offsets[1]);
   object.id = id;
   object.name = reader.readString(offsets[2]);
-  object.remoteId = reader.readString(offsets[3]);
-  object.time = reader.readStringOrNull(offsets[4]);
-  object.tripId = reader.readString(offsets[5]);
+  object.remoteId = reader.readStringOrNull(offsets[3]);
+  object.startTime = reader.readString(offsets[4]);
+  object.tripId = reader.readStringOrNull(offsets[5]);
   return object;
 }
 
@@ -152,21 +154,37 @@ P _activityDeserializeProp<P>(
 ) {
   switch (propertyId) {
     case 0:
-      return (reader.readStringOrNull(offset)) as P;
+      return (_ActivitycategoryValueEnumMap[reader.readByteOrNull(offset)] ??
+          ActivityCategory.transport) as P;
     case 1:
-      return (reader.readDateTimeOrNull(offset)) as P;
+      return (reader.readLong(offset)) as P;
     case 2:
       return (reader.readString(offset)) as P;
     case 3:
-      return (reader.readString(offset)) as P;
-    case 4:
       return (reader.readStringOrNull(offset)) as P;
-    case 5:
+    case 4:
       return (reader.readString(offset)) as P;
+    case 5:
+      return (reader.readStringOrNull(offset)) as P;
     default:
       throw IsarError('Unknown property with id $propertyId');
   }
 }
+
+const _ActivitycategoryEnumValueMap = {
+  'transport': 0,
+  'accommodation': 1,
+  'food': 2,
+  'attraction': 3,
+  'other': 4,
+};
+const _ActivitycategoryValueEnumMap = {
+  0: ActivityCategory.transport,
+  1: ActivityCategory.accommodation,
+  2: ActivityCategory.food,
+  3: ActivityCategory.attraction,
+  4: ActivityCategory.other,
+};
 
 Id _activityGetId(Activity object) {
   return object.id;
@@ -181,38 +199,38 @@ void _activityAttach(IsarCollection<dynamic> col, Id id, Activity object) {
 }
 
 extension ActivityByIndex on IsarCollection<Activity> {
-  Future<Activity?> getByRemoteId(String remoteId) {
+  Future<Activity?> getByRemoteId(String? remoteId) {
     return getByIndex(r'remoteId', [remoteId]);
   }
 
-  Activity? getByRemoteIdSync(String remoteId) {
+  Activity? getByRemoteIdSync(String? remoteId) {
     return getByIndexSync(r'remoteId', [remoteId]);
   }
 
-  Future<bool> deleteByRemoteId(String remoteId) {
+  Future<bool> deleteByRemoteId(String? remoteId) {
     return deleteByIndex(r'remoteId', [remoteId]);
   }
 
-  bool deleteByRemoteIdSync(String remoteId) {
+  bool deleteByRemoteIdSync(String? remoteId) {
     return deleteByIndexSync(r'remoteId', [remoteId]);
   }
 
-  Future<List<Activity?>> getAllByRemoteId(List<String> remoteIdValues) {
+  Future<List<Activity?>> getAllByRemoteId(List<String?> remoteIdValues) {
     final values = remoteIdValues.map((e) => [e]).toList();
     return getAllByIndex(r'remoteId', values);
   }
 
-  List<Activity?> getAllByRemoteIdSync(List<String> remoteIdValues) {
+  List<Activity?> getAllByRemoteIdSync(List<String?> remoteIdValues) {
     final values = remoteIdValues.map((e) => [e]).toList();
     return getAllByIndexSync(r'remoteId', values);
   }
 
-  Future<int> deleteAllByRemoteId(List<String> remoteIdValues) {
+  Future<int> deleteAllByRemoteId(List<String?> remoteIdValues) {
     final values = remoteIdValues.map((e) => [e]).toList();
     return deleteAllByIndex(r'remoteId', values);
   }
 
-  int deleteAllByRemoteIdSync(List<String> remoteIdValues) {
+  int deleteAllByRemoteIdSync(List<String?> remoteIdValues) {
     final values = remoteIdValues.map((e) => [e]).toList();
     return deleteAllByIndexSync(r'remoteId', values);
   }
@@ -309,8 +327,28 @@ extension ActivityQueryWhere on QueryBuilder<Activity, Activity, QWhereClause> {
     });
   }
 
+  QueryBuilder<Activity, Activity, QAfterWhereClause> remoteIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'remoteId',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<Activity, Activity, QAfterWhereClause> remoteIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'remoteId',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
   QueryBuilder<Activity, Activity, QAfterWhereClause> remoteIdEqualTo(
-      String remoteId) {
+      String? remoteId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'remoteId',
@@ -320,7 +358,7 @@ extension ActivityQueryWhere on QueryBuilder<Activity, Activity, QWhereClause> {
   }
 
   QueryBuilder<Activity, Activity, QAfterWhereClause> remoteIdNotEqualTo(
-      String remoteId) {
+      String? remoteId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -354,8 +392,28 @@ extension ActivityQueryWhere on QueryBuilder<Activity, Activity, QWhereClause> {
     });
   }
 
+  QueryBuilder<Activity, Activity, QAfterWhereClause> tripIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.equalTo(
+        indexName: r'tripId',
+        value: [null],
+      ));
+    });
+  }
+
+  QueryBuilder<Activity, Activity, QAfterWhereClause> tripIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addWhereClause(IndexWhereClause.between(
+        indexName: r'tripId',
+        lower: [null],
+        includeLower: false,
+        upper: [],
+      ));
+    });
+  }
+
   QueryBuilder<Activity, Activity, QAfterWhereClause> tripIdEqualTo(
-      String tripId) {
+      String? tripId) {
     return QueryBuilder.apply(this, (query) {
       return query.addWhereClause(IndexWhereClause.equalTo(
         indexName: r'tripId',
@@ -365,7 +423,7 @@ extension ActivityQueryWhere on QueryBuilder<Activity, Activity, QWhereClause> {
   }
 
   QueryBuilder<Activity, Activity, QAfterWhereClause> tripIdNotEqualTo(
-      String tripId) {
+      String? tripId) {
     return QueryBuilder.apply(this, (query) {
       if (query.whereSort == Sort.asc) {
         return query
@@ -402,71 +460,47 @@ extension ActivityQueryWhere on QueryBuilder<Activity, Activity, QWhereClause> {
 
 extension ActivityQueryFilter
     on QueryBuilder<Activity, Activity, QFilterCondition> {
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> categoryIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'category',
-      ));
-    });
-  }
-
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> categoryIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'category',
-      ));
-    });
-  }
-
   QueryBuilder<Activity, Activity, QAfterFilterCondition> categoryEqualTo(
-    String? value, {
-    bool caseSensitive = true,
-  }) {
+      ActivityCategory value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
         property: r'category',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<Activity, Activity, QAfterFilterCondition> categoryGreaterThan(
-    String? value, {
+    ActivityCategory value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
         property: r'category',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<Activity, Activity, QAfterFilterCondition> categoryLessThan(
-    String? value, {
+    ActivityCategory value, {
     bool include = false,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
         property: r'category',
         value: value,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
   QueryBuilder<Activity, Activity, QAfterFilterCondition> categoryBetween(
-    String? lower,
-    String? upper, {
+    ActivityCategory lower,
+    ActivityCategory upper, {
     bool includeLower = true,
     bool includeUpper = true,
-    bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
@@ -475,140 +509,55 @@ extension ActivityQueryFilter
         includeLower: includeLower,
         upper: upper,
         includeUpper: includeUpper,
-        caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> categoryStartsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'category',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> categoryEndsWith(
-    String value, {
-    bool caseSensitive = true,
-  }) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'category',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> categoryContains(
-      String value,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.contains(
-        property: r'category',
-        value: value,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> categoryMatches(
-      String pattern,
-      {bool caseSensitive = true}) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.matches(
-        property: r'category',
-        wildcard: pattern,
-        caseSensitive: caseSensitive,
-      ));
-    });
-  }
-
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> categoryIsEmpty() {
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> dayEqualTo(
+      int value) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'category',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> categoryIsNotEmpty() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'category',
-        value: '',
-      ));
-    });
-  }
-
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> dateIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'date',
-      ));
-    });
-  }
-
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> dateIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'date',
-      ));
-    });
-  }
-
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> dateEqualTo(
-      DateTime? value) {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'date',
+        property: r'day',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> dateGreaterThan(
-    DateTime? value, {
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> dayGreaterThan(
+    int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'date',
+        property: r'day',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> dateLessThan(
-    DateTime? value, {
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> dayLessThan(
+    int value, {
     bool include = false,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'date',
+        property: r'day',
         value: value,
       ));
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> dateBetween(
-    DateTime? lower,
-    DateTime? upper, {
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> dayBetween(
+    int lower,
+    int upper, {
     bool includeLower = true,
     bool includeUpper = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'date',
+        property: r'day',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -799,8 +748,24 @@ extension ActivityQueryFilter
     });
   }
 
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> remoteIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> remoteIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'remoteId',
+      ));
+    });
+  }
+
   QueryBuilder<Activity, Activity, QAfterFilterCondition> remoteIdEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -813,7 +778,7 @@ extension ActivityQueryFilter
   }
 
   QueryBuilder<Activity, Activity, QAfterFilterCondition> remoteIdGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -828,7 +793,7 @@ extension ActivityQueryFilter
   }
 
   QueryBuilder<Activity, Activity, QAfterFilterCondition> remoteIdLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -843,8 +808,8 @@ extension ActivityQueryFilter
   }
 
   QueryBuilder<Activity, Activity, QAfterFilterCondition> remoteIdBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -929,75 +894,59 @@ extension ActivityQueryFilter
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> timeIsNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNull(
-        property: r'time',
-      ));
-    });
-  }
-
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> timeIsNotNull() {
-    return QueryBuilder.apply(this, (query) {
-      return query.addFilterCondition(const FilterCondition.isNotNull(
-        property: r'time',
-      ));
-    });
-  }
-
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> timeEqualTo(
-    String? value, {
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> startTimeEqualTo(
+    String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'time',
+        property: r'startTime',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> timeGreaterThan(
-    String? value, {
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> startTimeGreaterThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
         include: include,
-        property: r'time',
+        property: r'startTime',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> timeLessThan(
-    String? value, {
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> startTimeLessThan(
+    String value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.lessThan(
         include: include,
-        property: r'time',
+        property: r'startTime',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> timeBetween(
-    String? lower,
-    String? upper, {
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> startTimeBetween(
+    String lower,
+    String upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.between(
-        property: r'time',
+        property: r'startTime',
         lower: lower,
         includeLower: includeLower,
         upper: upper,
@@ -1007,76 +956,93 @@ extension ActivityQueryFilter
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> timeStartsWith(
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> startTimeStartsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.startsWith(
-        property: r'time',
+        property: r'startTime',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> timeEndsWith(
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> startTimeEndsWith(
     String value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.endsWith(
-        property: r'time',
+        property: r'startTime',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> timeContains(
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> startTimeContains(
       String value,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.contains(
-        property: r'time',
+        property: r'startTime',
         value: value,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> timeMatches(
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> startTimeMatches(
       String pattern,
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.matches(
-        property: r'time',
+        property: r'startTime',
         wildcard: pattern,
         caseSensitive: caseSensitive,
       ));
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> timeIsEmpty() {
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> startTimeIsEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.equalTo(
-        property: r'time',
+        property: r'startTime',
         value: '',
       ));
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterFilterCondition> timeIsNotEmpty() {
+  QueryBuilder<Activity, Activity, QAfterFilterCondition>
+      startTimeIsNotEmpty() {
     return QueryBuilder.apply(this, (query) {
       return query.addFilterCondition(FilterCondition.greaterThan(
-        property: r'time',
+        property: r'startTime',
         value: '',
+      ));
+    });
+  }
+
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> tripIdIsNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNull(
+        property: r'tripId',
+      ));
+    });
+  }
+
+  QueryBuilder<Activity, Activity, QAfterFilterCondition> tripIdIsNotNull() {
+    return QueryBuilder.apply(this, (query) {
+      return query.addFilterCondition(const FilterCondition.isNotNull(
+        property: r'tripId',
       ));
     });
   }
 
   QueryBuilder<Activity, Activity, QAfterFilterCondition> tripIdEqualTo(
-    String value, {
+    String? value, {
     bool caseSensitive = true,
   }) {
     return QueryBuilder.apply(this, (query) {
@@ -1089,7 +1055,7 @@ extension ActivityQueryFilter
   }
 
   QueryBuilder<Activity, Activity, QAfterFilterCondition> tripIdGreaterThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1104,7 +1070,7 @@ extension ActivityQueryFilter
   }
 
   QueryBuilder<Activity, Activity, QAfterFilterCondition> tripIdLessThan(
-    String value, {
+    String? value, {
     bool include = false,
     bool caseSensitive = true,
   }) {
@@ -1119,8 +1085,8 @@ extension ActivityQueryFilter
   }
 
   QueryBuilder<Activity, Activity, QAfterFilterCondition> tripIdBetween(
-    String lower,
-    String upper, {
+    String? lower,
+    String? upper, {
     bool includeLower = true,
     bool includeUpper = true,
     bool caseSensitive = true,
@@ -1225,15 +1191,15 @@ extension ActivityQuerySortBy on QueryBuilder<Activity, Activity, QSortBy> {
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterSortBy> sortByDate() {
+  QueryBuilder<Activity, Activity, QAfterSortBy> sortByDay() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'date', Sort.asc);
+      return query.addSortBy(r'day', Sort.asc);
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterSortBy> sortByDateDesc() {
+  QueryBuilder<Activity, Activity, QAfterSortBy> sortByDayDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'date', Sort.desc);
+      return query.addSortBy(r'day', Sort.desc);
     });
   }
 
@@ -1261,15 +1227,15 @@ extension ActivityQuerySortBy on QueryBuilder<Activity, Activity, QSortBy> {
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterSortBy> sortByTime() {
+  QueryBuilder<Activity, Activity, QAfterSortBy> sortByStartTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'time', Sort.asc);
+      return query.addSortBy(r'startTime', Sort.asc);
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterSortBy> sortByTimeDesc() {
+  QueryBuilder<Activity, Activity, QAfterSortBy> sortByStartTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'time', Sort.desc);
+      return query.addSortBy(r'startTime', Sort.desc);
     });
   }
 
@@ -1300,15 +1266,15 @@ extension ActivityQuerySortThenBy
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterSortBy> thenByDate() {
+  QueryBuilder<Activity, Activity, QAfterSortBy> thenByDay() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'date', Sort.asc);
+      return query.addSortBy(r'day', Sort.asc);
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterSortBy> thenByDateDesc() {
+  QueryBuilder<Activity, Activity, QAfterSortBy> thenByDayDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'date', Sort.desc);
+      return query.addSortBy(r'day', Sort.desc);
     });
   }
 
@@ -1348,15 +1314,15 @@ extension ActivityQuerySortThenBy
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterSortBy> thenByTime() {
+  QueryBuilder<Activity, Activity, QAfterSortBy> thenByStartTime() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'time', Sort.asc);
+      return query.addSortBy(r'startTime', Sort.asc);
     });
   }
 
-  QueryBuilder<Activity, Activity, QAfterSortBy> thenByTimeDesc() {
+  QueryBuilder<Activity, Activity, QAfterSortBy> thenByStartTimeDesc() {
     return QueryBuilder.apply(this, (query) {
-      return query.addSortBy(r'time', Sort.desc);
+      return query.addSortBy(r'startTime', Sort.desc);
     });
   }
 
@@ -1375,16 +1341,15 @@ extension ActivityQuerySortThenBy
 
 extension ActivityQueryWhereDistinct
     on QueryBuilder<Activity, Activity, QDistinct> {
-  QueryBuilder<Activity, Activity, QDistinct> distinctByCategory(
-      {bool caseSensitive = true}) {
+  QueryBuilder<Activity, Activity, QDistinct> distinctByCategory() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'category', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'category');
     });
   }
 
-  QueryBuilder<Activity, Activity, QDistinct> distinctByDate() {
+  QueryBuilder<Activity, Activity, QDistinct> distinctByDay() {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'date');
+      return query.addDistinctBy(r'day');
     });
   }
 
@@ -1402,10 +1367,10 @@ extension ActivityQueryWhereDistinct
     });
   }
 
-  QueryBuilder<Activity, Activity, QDistinct> distinctByTime(
+  QueryBuilder<Activity, Activity, QDistinct> distinctByStartTime(
       {bool caseSensitive = true}) {
     return QueryBuilder.apply(this, (query) {
-      return query.addDistinctBy(r'time', caseSensitive: caseSensitive);
+      return query.addDistinctBy(r'startTime', caseSensitive: caseSensitive);
     });
   }
 
@@ -1425,15 +1390,16 @@ extension ActivityQueryProperty
     });
   }
 
-  QueryBuilder<Activity, String?, QQueryOperations> categoryProperty() {
+  QueryBuilder<Activity, ActivityCategory, QQueryOperations>
+      categoryProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'category');
     });
   }
 
-  QueryBuilder<Activity, DateTime?, QQueryOperations> dateProperty() {
+  QueryBuilder<Activity, int, QQueryOperations> dayProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'date');
+      return query.addPropertyName(r'day');
     });
   }
 
@@ -1443,19 +1409,19 @@ extension ActivityQueryProperty
     });
   }
 
-  QueryBuilder<Activity, String, QQueryOperations> remoteIdProperty() {
+  QueryBuilder<Activity, String?, QQueryOperations> remoteIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'remoteId');
     });
   }
 
-  QueryBuilder<Activity, String?, QQueryOperations> timeProperty() {
+  QueryBuilder<Activity, String, QQueryOperations> startTimeProperty() {
     return QueryBuilder.apply(this, (query) {
-      return query.addPropertyName(r'time');
+      return query.addPropertyName(r'startTime');
     });
   }
 
-  QueryBuilder<Activity, String, QQueryOperations> tripIdProperty() {
+  QueryBuilder<Activity, String?, QQueryOperations> tripIdProperty() {
     return QueryBuilder.apply(this, (query) {
       return query.addPropertyName(r'tripId');
     });

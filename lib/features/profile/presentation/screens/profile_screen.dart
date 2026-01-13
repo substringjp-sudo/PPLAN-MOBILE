@@ -99,7 +99,7 @@ class ProfileScreen extends ConsumerWidget {
                       child: user.profilePictureUrl == null ? const Icon(LucideIcons.user, size: 50) : null,
                     ),
                     const SizedBox(height: 16),
-                    Text(user.name, style: textTheme.headlineSmall?.copyWith(color: AppColors.text)),
+                    Text(user.name, style: textTheme.headlineSmall?.copyWith(color: AppColors.textWhite)),
                     const SizedBox(height: 8),
                     Text('@${user.username}', style: textTheme.bodyMedium?.copyWith(color: AppColors.mutedText)),
                     const SizedBox(height: 24),
@@ -173,7 +173,7 @@ class _StatItem extends StatelessWidget {
     final textTheme = Theme.of(context).textTheme;
     return Column(
       children: [
-        Text(value, style: textTheme.titleLarge?.copyWith(color: AppColors.text, fontWeight: FontWeight.bold)),
+        Text(value, style: textTheme.titleLarge?.copyWith(color: AppColors.textWhite, fontWeight: FontWeight.bold)),
         const SizedBox(height: 4),
         Text(label, style: textTheme.bodySmall?.copyWith(color: AppColors.mutedText)),
       ],

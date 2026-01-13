@@ -10,6 +10,16 @@ class TripRepository {
     return await _isar.trips.get(tripId);
   }
 
+  Future<List<Trip>> getAllTrips() async {
+    return await _isar.trips.where().findAll();
+  }
+
+  Future<void> upsertTrip(Trip trip) async {
+    await _isar.writeTxn(() async {
+      await _isar.trips.put(trip);
+    });
+  }
+
   // Add other trip-related methods here if needed
-  // e.g., getAllTrips, upsertTrip, deleteTrip
+  // e.g., deleteTrip
 }
