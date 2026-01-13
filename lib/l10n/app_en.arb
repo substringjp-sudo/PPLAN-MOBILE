@@ -1,0 +1,11 @@
+{
+  "@@locale": "en",
+  "exploration": "Exploration",
+  "nature": "Nature",
+  "relaxation": "Relaxation",
+  "activity": "Activity",
+  "performance": "Performance",
+  "package": "Package",
+  "tour": "Tour",
+  "etc": "Etc"
+}

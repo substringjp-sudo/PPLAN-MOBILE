@@ -1,0 +1,233 @@
+[
+    {
+        "id": 392,
+        "iso2": "JP",
+        "iso3": "JPN",
+        "name": "Japan",
+        "nativeName": "日本",
+        "translations": {
+            "en": "Japan",
+            "ja": "日本",
+            "ko": "일본"
+        },
+        "flagEmoji": "🇯🇵",
+        "currency": "JPY",
+        "coordinates": {
+            "lat": 36.2048,
+            "lng": 138.2529
+        },
+        "mapFile": "japan.json",
+        "adm1ObjectKey": "JPN_adm1",
+        "cityMapFile": "japan-towns.json",
+        "adm2ObjectKey": "JPN_adm2"
+    },
+    {
+        "id": 840,
+        "iso2": "US",
+        "iso3": "USA",
+        "name": "United States",
+        "nativeName": "United States",
+        "translations": {
+            "en": "United States",
+            "ko": "미국",
+            "ja": "アメリカ"
+        },
+        "flagEmoji": "🇺🇸",
+        "currency": "USD",
+        "coordinates": {
+            "lat": 37.0902,
+            "lng": -95.7129
+        },
+        "mapFile": "united-states.json",
+        "adm1ObjectKey": "us"
+    },
+    {
+        "id": 826,
+        "iso2": "GB",
+        "iso3": "GBR",
+        "name": "United Kingdom",
+        "nativeName": "United Kingdom",
+        "translations": {
+            "en": "United Kingdom",
+            "ko": "영국",
+            "ja": "イギリス"
+        },
+        "flagEmoji": "🇬🇧",
+        "currency": "GBP",
+        "coordinates": {
+            "lat": 55.3781,
+            "lng": -3.4360
+        },
+        "mapFile": "united-kingdom.json",
+        "adm1ObjectKey": "GBR_adm2",
+        "cityMapFile": "united-kingdom.json",
+        "adm2ObjectKey": "GBR_adm2"
+    },
+    {
+        "id": 156,
+        "iso2": "CN",
+        "iso3": "CHN",
+        "name": "China",
+        "nativeName": "中国",
+        "translations": {
+            "en": "China",
+            "ko": "중국",
+            "ja": "中国",
+            "zh": "中国"
+        },
+        "flagEmoji": "🇨🇳",
+        "currency": "CNY",
+        "coordinates": {
+            "lat": 35.8617,
+            "lng": 104.1954
+        },
+        "mapFile": "china.json",
+        "adm1ObjectKey": "CHN_adm1"
+    },
+    {
+        "id": 410,
+        "iso2": "KR",
+        "iso3": "KOR",
+        "name": "South Korea",
+        "nativeName": "대한민국",
+        "translations": {
+            "en": "South Korea",
+            "ko": "대한민국",
+            "ja": "韓国"
+        },
+        "flagEmoji": "🇰🇷",
+        "currency": "KRW",
+        "coordinates": {
+            "lat": 35.9078,
+            "lng": 127.7669
+        },
+        "mapFile": "south-korea.json",
+        "adm1ObjectKey": "default"
+    },
+    {
+        "id": 250,
+        "iso2": "FR",
+        "iso3": "FRA",
+        "name": "France",
+        "nativeName": "France",
+        "translations": {
+            "en": "France",
+            "ko": "프랑스",
+            "ja": "フランス",
+            "fr": "France"
+        },
+        "flagEmoji": "🇫🇷",
+        "currency": "EUR",
+        "coordinates": {
+            "lat": 46.2276,
+            "lng": 2.2137
+        },
+        "mapFile": "france.json",
+        "adm1ObjectKey": "default"
+    },
+    {
+        "id": 276,
+        "iso2": "DE",
+        "iso3": "DEU",
+        "name": "Germany",
+        "nativeName": "Deutschland",
+        "translations": {
+            "en": "Germany",
+            "ko": "독일",
+            "ja": "ドイツ",
+            "de": "Deutschland"
+        },
+        "flagEmoji": "🇩🇪",
+        "currency": "EUR",
+        "coordinates": {
+            "lat": 51.1657,
+            "lng": 10.4515
+        },
+        "mapFile": "germany.json",
+        "adm1ObjectKey": "default"
+    },
+    {
+        "id": 380,
+        "iso2": "IT",
+        "iso3": "ITA",
+        "name": "Italy",
+        "nativeName": "Italia",
+        "translations": {
+            "en": "Italy",
+            "ko": "이탈리아",
+            "ja": "イタリア",
+            "it": "Italia"
+        },
+        "flagEmoji": "🇮🇹",
+        "currency": "EUR",
+        "coordinates": {
+            "lat": 41.8719,
+            "lng": 12.5674
+        },
+        "mapFile": "italy.json",
+        "adm1ObjectKey": "ITA_adm2",
+        "cityMapFile": "italy.json",
+        "adm2ObjectKey": "ITA_adm2"
+    },
+    {
+        "id": 724,
+        "iso2": "ES",
+        "iso3": "ESP",
+        "name": "Spain",
+        "nativeName": "España",
+        "translations": {
+            "en": "Spain",
+            "ko": "스페인",
+            "ja": "スペイン",
+            "es": "España"
+        },
+        "flagEmoji": "🇪🇸",
+        "currency": "EUR",
+        "coordinates": {
+            "lat": 40.4637,
+            "lng": -3.7492
+        },
+        "mapFile": "spain.json",
+        "adm1ObjectKey": "default"
+    },
+    {
+        "id": 124,
+        "iso2": "CA",
+        "iso3": "CAN",
+        "name": "Canada",
+        "nativeName": "Canada",
+        "translations": {
+            "en": "Canada",
+            "ko": "캐나다",
+            "ja": "캐나다"
+        },
+        "flagEmoji": "🇨🇦",
+        "currency": "CAD",
+        "coordinates": {
+            "lat": 56.1304,
+            "lng": -106.3468
+        },
+        "mapFile": "canada.json",
+        "adm1ObjectKey": "default"
+    },
+    {
+        "id": 36,
+        "iso2": "AU",
+        "iso3": "AUS",
+        "name": "Australia",
+        "nativeName": "Australia",
+        "translations": {
+            "en": "Australia",
+            "ko": "호주",
+            "ja": "オーストラリア"
+        },
+        "flagEmoji": "🇦🇺",
+        "currency": "AUD",
+        "coordinates": {
+            "lat": -25.2744,
+            "lng": 133.7751
+        },
+        "mapFile": "australia.json",
+        "adm1ObjectKey": "default"
+    }
+]

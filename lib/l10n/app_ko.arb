@@ -1,0 +1,11 @@
+{
+  "@@locale": "ko",
+  "exploration": "탐사",
+  "nature": "자연",
+  "relaxation": "휴식",
+  "activity": "액티비티",
+  "performance": "공연",
+  "package": "패키지",
+  "tour": "투어",
+  "etc": "기타"
+}
