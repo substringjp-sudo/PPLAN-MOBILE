@@ -645,9 +645,9 @@
     },
     {
       "name": "meta",
-      "rootUri": "file:///home/user/.pub-cache/hosted/pub.dev/meta-1.17.0",
+      "rootUri": "file:///home/user/.pub-cache/hosted/pub.dev/meta-1.16.0",
       "packageUri": "lib/",
-      "languageVersion": "3.5"
+      "languageVersion": "2.12"
     },
     {
       "name": "mime",
@@ -897,7 +897,7 @@
     },
     {
       "name": "test_api",
-      "rootUri": "file:///home/user/.pub-cache/hosted/pub.dev/test_api-0.7.7",
+      "rootUri": "file:///home/user/.pub-cache/hosted/pub.dev/test_api-0.7.6",
       "packageUri": "lib/",
       "languageVersion": "3.5"
     },
@@ -1019,12 +1019,12 @@
       "name": "mobile",
       "rootUri": "../",
       "packageUri": "lib/",
-      "languageVersion": "3.10"
+      "languageVersion": "3.9"
     }
   ],
   "generator": "pub",
-  "generatorVersion": "3.10.7",
+  "generatorVersion": "3.9.0",
   "flutterRoot": "file:///home/user/flutter",
-  "flutterVersion": "3.38.6",
+  "flutterVersion": "3.35.2",
   "pubCache": "file:///home/user/.pub-cache"
 }

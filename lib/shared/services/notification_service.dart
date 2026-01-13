@@ -17,6 +17,7 @@ class NotificationService extends _$NotificationService {
     await _notifications.initialize(
       const InitializationSettings(android: androidSettings, iOS: iosSettings),
     );
+    return null;
   }
 
   Future<void> showNotification({

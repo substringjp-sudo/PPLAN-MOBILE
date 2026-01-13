@@ -1,0 +1,1 @@
+ /home/user/PPLAN-MOBILE/lib/l10n/app_localizations_en.dart /home/user/PPLAN-MOBILE/lib/l10n/app_localizations_ko.dart /home/user/PPLAN-MOBILE/lib/l10n/app_localizations.dart:  /home/user/PPLAN-MOBILE/l10n.yaml /home/user/PPLAN-MOBILE/lib/l10n/app_en.arb /home/user/PPLAN-MOBILE/lib/l10n/app_ko.arb
