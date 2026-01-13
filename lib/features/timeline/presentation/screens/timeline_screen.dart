@@ -11,9 +11,9 @@ import 'package:mobile/features/timeline/presentation/widgets/range_selector.dar
 import 'package:mobile/features/timeline/presentation/utils/timeline_utils.dart';
 import 'package:mobile/features/scrapbook/presentation/screens/quick_post_screen.dart';
 
-// 4.2. Timeline Slider (Main Scroll Area)
 class TimelineScreen extends ConsumerStatefulWidget {
-  const TimelineScreen({super.key});
+  final String tripId;
+  const TimelineScreen({super.key, required this.tripId});
 
   @override
   ConsumerState<TimelineScreen> createState() => _TimelineScreenState();
@@ -27,7 +27,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   double? _selectionStartX;
   double? _selectionCurrentX;
 
-  // Base time for the timeline (e.g. start of trip)
   // In a real app this should come from the loaded trip data
   final DateTime _timelineStartTime = DateTime(2023, 5, 20, 8, 0);
   final DateTime _timelineEndTime = DateTime(2023, 5, 22, 20, 0);
@@ -39,13 +38,14 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
 
     // Initial Load
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      ref
-          .read(timelineControllerProvider.notifier)
-          .loadTripData(
-            1, // Mock localTripId
-            _timelineStartTime,
-            _timelineEndTime,
-          );
+      final tripIdInt = int.tryParse(widget.tripId);
+      if (tripIdInt != null) {
+        ref.read(timelineControllerProvider.notifier).loadTripData(
+              tripIdInt, // Use parsed tripId
+              _timelineStartTime,
+              _timelineEndTime,
+            );
+      }
     });
   }
 
@@ -108,7 +108,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
       ..endTime = endTime
       ..createdAt = DateTime.now()
       ..updatedAt = DateTime.now()
-      ..tripId = '1';
+      ..tripId = widget.tripId; // Use widget.tripId
 
     ref.read(timelineControllerProvider.notifier).addTimelineItem(item);
 
@@ -132,6 +132,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
         .generateAutoFillDraft(tapTime);
 
     if (draft != null) {
+      draft.tripId = widget.tripId; // Assign tripId to draft
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -153,6 +154,14 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   @override
   Widget build(BuildContext context) {
     final timelineState = ref.watch(timelineControllerProvider);
+
+    // Handle loading and error states
+    if (timelineState.isLoading) {
+      return const Scaffold(
+        body: Center(child: CircularProgressIndicator()),
+      );
+    }
+
     final photos = timelineState.photos;
     final items = timelineState.items;
 
@@ -174,18 +183,15 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
         )
         .toList();
 
-    // Calculate total width based on duration and zoom
     final totalDurationMinutes = _timelineEndTime
         .difference(_timelineStartTime)
         .inMinutes;
     final totalWidth = totalDurationMinutes * _zoomLevel;
 
-    // Mock Active Photo logic: Find photo closest to center time
-    // Current center pixel = scrollOffset + viewportWidth/2
-    // For now, just taking the first one
     final activePhoto = photos.isNotEmpty ? photos.first : null;
 
     return Scaffold(
+      appBar: AppBar(title: Text('Timeline - Trip #${widget.tripId}')),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -197,9 +203,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
       ),
       body: Column(
         children: [
-          // 4.1. Active Photo Preview
           ActivePhotoPreview(activePhoto: activePhoto),
-
           Expanded(
             child: Stack(
               children: [
@@ -209,11 +213,10 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                   physics: const BouncingScrollPhysics(),
                   child: SizedBox(
                     width: totalWidth,
-                    height: MediaQuery.of(context).size.height, // Fill height
+                    height: MediaQuery.of(context).size.height,
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        // 1. Photo Zone (Top)
                         GestureDetector(
                           onHorizontalDragStart: _handleTimelineDragStart,
                           onHorizontalDragUpdate: _handleTimelineDragUpdate,
@@ -234,30 +237,23 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                                     top: 10,
                                     child: PhotoZoneBar(
                                       photo: photo,
-                                      isHighlighted:
-                                          false, // Calc based on scroll
+                                      isHighlighted: false,
                                     ),
                                   );
                                 }),
                                 if (_selectionStartX != null &&
                                     _selectionCurrentX != null)
                                   RangeSelector(
-                                    left:
-                                        _selectionStartX! < _selectionCurrentX!
+                                    left: _selectionStartX! < _selectionCurrentX!
                                         ? _selectionStartX!
                                         : _selectionCurrentX!,
-                                    width:
-                                        (_selectionCurrentX! -
-                                                _selectionStartX!)
-                                            .abs(),
+                                    width: (_selectionCurrentX! - _selectionStartX!).abs(),
                                     onCreateStay: () =>
                                         _createTimelineItemFromSelection(
-                                          TimelineItemType.accommodation,
-                                        ),
+                                            TimelineItemType.accommodation),
                                     onCreateActivity: () =>
                                         _createTimelineItemFromSelection(
-                                          TimelineItemType.activity,
-                                        ),
+                                            TimelineItemType.activity),
                                     onCancel: () => setState(() {
                                       _selectionStartX = null;
                                       _selectionCurrentX = null;
@@ -267,26 +263,20 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                             ),
                           ),
                         ),
-
-                        // 2. Ruler Zone (Middle)
                         CustomPaint(
                           size: Size(totalWidth, 30),
                           painter: TimeRulerPainter(
                             startTime: _timelineStartTime,
                             endTime: _timelineEndTime,
                             pixelsPerMinute: _zoomLevel,
-                            // Pass timezone changes here
                           ),
                         ),
-
-                        // 3. Activity Lane (Track 1)
                         Container(
                           height: 80,
                           color: Colors.blue[50],
                           child: Stack(
                             children: events.map((event) {
-                              if (event.startTime == null ||
-                                  event.endTime == null) {
+                              if (event.startTime == null || event.endTime == null) {
                                 return const SizedBox();
                               }
                               final startX = TimelineUtils.timeToPixel(
@@ -313,8 +303,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                             }).toList(),
                           ),
                         ),
-
-                        // 4. Transport Lane (Track 2)
                         GestureDetector(
                           onTapUp: _handleTransportLaneTap,
                           behavior: HitTestBehavior.opaque,
@@ -342,13 +330,10 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                                   top: 10,
                                   child: TransportCapsule(
                                     title: transport.title,
-                                    icon: Icons
-                                        .directions_car, // Map type to icon
+                                    icon: Icons.directions_car,
                                     width: endX - startX,
                                     onTap: () {
-                                      debugPrint(
-                                        'Edit transport: ${transport.id}',
-                                      );
+                                      debugPrint('Edit transport: ${transport.id}');
                                     },
                                   ),
                                 );
@@ -360,8 +345,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                     ),
                   ),
                 ),
-
-                // 3.2. Center Indicator (Overlay)
                 IgnorePointer(
                   child: Center(
                     child: Container(
@@ -371,12 +354,10 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                     ),
                   ),
                 ),
-
-                // Zoom Slider (Overlay)
                 Positioned(
                   right: 16,
                   top: 50,
-                  bottom: 200, // Adjust to not overlap with editor
+                  bottom: 200,
                   child: RotatedBox(
                     quarterTurns: 3,
                     child: Slider(
@@ -385,7 +366,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                       max: 5.0,
                       onChanged: (val) {
                         setState(() {
-                          // Simple Zoom without center-lock logic for this step
                           _zoomLevel = val;
                         });
                       },
@@ -395,8 +375,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
               ],
             ),
           ),
-
-          // 4.3. Event/Transport Editor Placeholder
           Container(
             height: 150,
             decoration: BoxDecoration(

@@ -22,6 +22,9 @@ import 'package:workmanager/workmanager.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:mobile/firebase_options.dart';
 
+// Import TimelineScreen
+import 'package:mobile/features/timeline/presentation/screens/timeline_screen.dart';
+
 @pragma('vm:entry-point')
 void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
@@ -90,6 +93,16 @@ final _router = GoRouter(
     GoRoute(
       path: '/inbox',
       builder: (context, state) => const ScrapInboxScreen(),
+    ),
+    // Add Timeline route
+    GoRoute(
+      path: '/timeline/:tripId',
+      builder: (context, state) {
+        final tripId = state.pathParameters['tripId']!;
+        // Note: For now, we pass the tripId as a string,
+        // but TimelineScreen expects an int. This will be fixed next.
+        return TimelineScreen(tripId: tripId);
+      },
     ),
   ],
 );
@@ -173,6 +186,13 @@ class HomeScreen extends ConsumerWidget {
               onPressed: () => context.push('/inbox'),
               icon: const Icon(Icons.inbox),
               label: const Text('Go to Scrap Inbox'),
+            ),
+            const Gap(12),
+            // Add button to navigate to Timeline
+            ElevatedButton.icon(
+              onPressed: () => context.push('/timeline/1'), // Hardcoded tripId '1'
+              icon: const Icon(Icons.timeline),
+              label: const Text('View Timeline (Demo)'),
             ),
             const Gap(12),
             ElevatedButton.icon(
