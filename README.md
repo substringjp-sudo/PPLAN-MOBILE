@@ -1,16 +1,34 @@
-# mobile
+# PPlan (Personal Plan) - 당신의 일상과 여행을 기록하는 앱
 
-A new Flutter project.
+## 1. 프로젝트 목적
 
-## Getting Started
+PPlan은 사용자의 일상, 여행, 그리고 소중한 순간들을 손쉽게 기록하고 관리할 수 있도록 돕는 모바일 애플리케이션입니다. 흩어져 있는 기억의 조각들을 타임라인, 스크랩북, 여행 앨범 형태로 정리하여 언제든지 다시 돌아볼 수 있는 개인적인 공간을 제공하는 것을 목표로 합니다.
 
-This project is a starting point for a Flutter application.
+## 2. 주요 기능 및 개발 방향
 
-A few resources to get you started if this is your first Flutter project:
+### 주요 기능
+*   **타임라인 (Timeline):** 사진, 이벤트, 이동 경로 등을 시간 순서대로 기록하고 시각적으로 보여줍니다.
+*   **스크랩북 (Scrapbook):** 인상 깊은 순간들을 스크랩하여 자신만의 콜렉션을 만듭니다.
+*   **여행 관리 (Trips):** 여행 계획을 세우고, 여행 중의 기록을 별도로 관리하여 여행 앨범을 만듭니다.
+*   **동기화 (Sync):** Firebase를 활용하여 여러 기기에서 데이터를 안전하게 동기화합니다.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+### 개발 방향
+*   **크로스 플랫폼:** Flutter를 사용하여 Android와 iOS에서 모두 동작하는 앱을 개발합니다.
+*   **서버리스 아키텍처:** Firebase를 적극적으로 활용하여 인증, 데이터베이스, 스토리지 등 백엔드 인프라를 구축합니다.
+*   **글로벌 지원:** 다국어 지원(Localization)을 통해 다양한 국가의 사용자들이 앱을 사용할 수 있도록 합니다.
+*   **사용자 중심 UI/UX:** 직관적이고 아름다운 디자인으로 사용자 경험을 극대화합니다.
+*   **모듈화된 구조:** 기능별로 코드를 모듈화하여 유지보수성과 확장성을 높입니다.
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 3. 작업 계획 (Roadmap)
+
+| 단계 | 주요 작업 내용 | 예상 기간 |
+| :--- | :--- | :--- |
+| **1단계: 핵심 기능 구현** | - 타임라인, 스크랩북, 여행 관리 기능의 기본 모델 및 UI 구현<br>- Isar를 사용한 로컬 데이터베이스 구축 | 4주 |
+| **2단계: Firebase 연동** | - Firebase Authentication을 이용한 사용자 인증 구현<br>- Firestore/Realtime Database를 이용한 데이터 동기화 기능 구현<br>- Firebase Storage를 이용한 이미지 등 미디어 파일 저장 | 3주 |
+| **3단계: UI/UX 고도화** | - 앱 전체 디자인 개선 및 애니메이션 추가<br>- 사용자 피드백을 반영한 편의 기능 개선 | 2주 |
+| **4단계: 테스트 및 안정화** | - 단위 테스트 및 통합 테스트 코드 작성<br>- 주요 기능에 대한 QA 및 버그 수정 | 2주 |
+| **5단계: 배포** | - Google Play Store 및 Apple App Store 배포 준비<br>- 앱 스토어 등록 및 출시 | 1주 |
+
+---
+
+*이 문서는 프로젝트의 진행 상황에 따라 지속적으로 업데이트될 수 있습니다.*
