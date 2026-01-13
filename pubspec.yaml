@@ -59,6 +59,7 @@ dependencies:
   lucide_flutter: ^0.562.0
   flutter_localizations:
     sdk: flutter
+  timeline_tile: ^2.0.0
 
 dev_dependencies:
   flutter_test:

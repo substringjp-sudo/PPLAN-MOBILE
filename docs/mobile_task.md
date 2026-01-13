@@ -40,10 +40,10 @@ This document outlines the **exact design specifications** and implementation ta
 - [x] **Initialize Flutter Project**
 - [x] **Firebase Setup** (Auth, Firestore)
 - [x] **State Management** (`flutter_riverpod`)
-- [ ] **Configure Theme Data** (`lib/app/theme.dart`)
-    - [ ] Create `AppColors` class with above palette.
-    - [ ] Create `AppTextStyles` class.
-    - [ ] Override `ThemeData.dark()` with `scaffoldBackgroundColor: AppColors.background`.
+- [x] **Configure Theme Data** (`lib/app/theme.dart`)
+    - [x] Create `AppColors` class with above palette.
+    - [x] Create `AppTextStyles` class.
+    - [x] Override `ThemeData.dark()` with `scaffoldBackgroundColor: AppColors.background`.
 
 ## 2. Navigation Shell (`MainNavigationScreen`)
 - [x] **Bottom Navigation Bar**
@@ -61,13 +61,13 @@ This document outlines the **exact design specifications** and implementation ta
 ## 3. Feature: Home / Feed (`src/app/[locale]/page.tsx`)
 **Design Reference**: `src/consumer/ui/home/HomeContent.tsx`
 
-### [ ] Home Header
+### [x] Home Header
 - **Layout**: `Column`, Padding `20px`
 - **Logo**: Row(`Icon(Bookmark, Indigo)`, `Text("PPLAN", Outfit, 24px)`)
 - **Subtitle**: "다음 여행을 위한 멋진 장소를 발견해보세요" (`NotoSansKr`, 14px, `Grey[600]`)
 - **Status**: [x] Implemented
 
-### [ ] Post Card (`FeedTimelineItem.tsx`)
+### [x] Post Card (`FeedTimelineItem.tsx`)
 **Design Specs**:
 - **Container**:
     - Margin: `bottom: 16`
@@ -86,12 +86,12 @@ This document outlines the **exact design specifications** and implementation ta
     - **Visual Style**: Left Border `3px Solid Indigo`.
 - **Attached Link (Google Maps)**:
     - Container: `Rounded 12`, `Border Grey[200]`.
-    - Map Placeholder area: `Height 100px`.
+    - Map Placeholder area: `Height 100px`
     - Icon: `MapPin center Indigo`.
 - **Footer**:
     - Like Button: `Icon(Heart)` - Pink if active.
     - "Read Story" Link: `Indigo Text + ArrowRight`.
-- **Status**: [/] Basic layout done, needs specific styling refinements.
+- **Status**: [x] Basic layout done, needs specific styling refinements.
 
 ## 4. Feature: My Trip List (`src/consumer/ui/mytrip/TripList.tsx`)
 **Design Specs**:
@@ -130,20 +130,19 @@ This document outlines the **exact design specifications** and implementation ta
     - Radius: `12`.
     - Padding: `16`.
 - **Primary Button**:
-    - Height: `56px`.
+    - Height: `56px`
     - Bg: `Indigo`.
     - Text: `White, Bold, 16px`.
     - Width: `double.infinity`.
 
 ## 7. Migration Checklist
 - [x] **Home Screen** (Basic UI)
-- [ ] **My Trip Screen**
-    - [ ] Create `TripCard` widget (Grid Item).
-    - [ ] Create `MyTripList` listing (Firestore Query).
-- [ ] **Trip Detail Screen**
-    - [ ] `Sliver` Scroll View with Parallax Header.
-    - [ ] `TimelineBuilder` widget.
-- [ ] **Profile Screen**
-    - [ ] User Stats (Trips, Following).
-    - [ ] Grid of User's Travelogs.
-
+- [x] **My Trip Screen**
+    - [x] Create `TripCard` widget (Grid Item).
+    - [x] Create `MyTripList` listing (Firestore Query).
+- [x] **Trip Detail Screen**
+    - [x] `Sliver` Scroll View with Parallax Header.
+    - [x] `TimelineBuilder` widget.
+- [x] **Profile Screen**
+    - [x] User Stats (Trips, Following).
+    - [x] Grid of User's Travelogs.

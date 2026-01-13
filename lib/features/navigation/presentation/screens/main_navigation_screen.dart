@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:lucide_flutter/lucide_flutter.dart';
 import 'package:mobile/app/theme.dart';
 import 'package:mobile/features/home/presentation/screens/home_screen.dart';
+import 'package:mobile/features/trips/presentation/screens/my_trips_screen.dart';
 
 class MainNavigationScreen extends StatefulWidget {
   const MainNavigationScreen({super.key});
@@ -17,7 +18,7 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
   static const List<Widget> _widgetOptions = <Widget>[
     HomeScreen(),
     Text('Map Screen'),
-    Text('Likes Screen'),
+    MyTripsScreen(), // Changed from Text('Likes Screen')
     Text('Profile Screen'),
   ];
 
@@ -75,17 +76,25 @@ class _MainNavigationScreenState extends State<MainNavigationScreen> {
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: FloatingActionButton(
         onPressed: () {},
-        backgroundColor: AppColors.primary,
+        elevation: 4.0, // Added for a subtle shadow
+        highlightElevation: 12.0,
         child: Container(
           width: 64,
           height: 64,
           decoration: const BoxDecoration(
             shape: BoxShape.circle,
             gradient: LinearGradient(
-              colors: [AppColors.primary, Color(0xFF8B5CF6)],
+              colors: [AppColors.primary, Color(0xFF8B5CF6)], // Consistent with spec
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.primary.withOpacity(0.4),
+                blurRadius: 20,
+                offset: Offset(0, 4),
+              )
+            ]
           ),
           child: const Icon(LucideIcons.pencil, color: Colors.white, size: 28),
         ),

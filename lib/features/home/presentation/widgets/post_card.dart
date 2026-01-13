@@ -8,79 +8,112 @@ class PostCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final textTheme = Theme.of(context).textTheme;
+    final colorScheme = Theme.of(context).colorScheme;
+
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: AppColors.surface,
+        color: colorScheme.surface,
         borderRadius: BorderRadius.circular(24),
-        border: Border.all(color: Colors.white.withOpacity(0.05)),
+        border: Border.all(color: colorScheme.onSurface.withOpacity(0.1)),
       ),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          // Card Header
           Row(
             children: [
               const CircleAvatar(
                 radius: 16,
-                // backgroundImage: NetworkImage('...'),
+                backgroundColor: AppColors.primary, // Or use a placeholder
               ),
               const SizedBox(width: 12),
-              const Text('User Name', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
-              const Spacer(),
-              Text('1h ago'.toUpperCase(), style: const TextStyle(fontSize: 10, fontWeight: FontWeight.bold, color: AppColors.mutedText)),
+              Expanded(
+                child: Text(
+                  'User Name',
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 14),
+                ),
+              ),
+              Text(
+                '1H AGO',
+                style: textTheme.bodySmall?.copyWith(
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 0.8,
+                  fontSize: 10,
+                ),
+              ),
               const SizedBox(width: 8),
-              const Icon(LucideIcons.moreHorizontal, size: 16, color: AppColors.mutedText),
+              Icon(LucideIcons.moreHorizontal, size: 16, color: textTheme.bodySmall?.color),
             ],
           ),
           const SizedBox(height: 16),
+
+          // Main Content with accent border
           Container(
+            padding: const EdgeInsets.only(left: 16),
             decoration: const BoxDecoration(
               border: Border(left: BorderSide(color: AppColors.primary, width: 3)),
             ),
-            padding: const EdgeInsets.only(left: 12),
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('Post Title', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16, color: Color(0xFF1E1B4B))),
+                Text(
+                  'Post Title',
+                  style: textTheme.bodyMedium?.copyWith(fontWeight: FontWeight.bold, fontSize: 16.5), // Slightly larger for emphasis
+                ),
                 const SizedBox(height: 4),
                 Text(
-                  'This is the post description. It can have a maximum of two lines. This is the post description. It can have a maximum of two lines.',
+                  'This is the post description. It can have a maximum of two lines. It will truncate with an ellipsis if it is too long.',
                   maxLines: 2,
                   overflow: TextOverflow.ellipsis,
-                  style: TextStyle(fontSize: 14, color: AppColors.mutedText.withOpacity(0.8)),
+                  style: textTheme.bodyMedium?.copyWith(
+                    fontSize: 14,
+                    color: textTheme.bodySmall?.color,
+                    height: 1.5,
+                  ),
                 ),
               ],
             ),
           ),
           const SizedBox(height: 16),
+
+          // Attached Map Link
           Container(
             height: 100,
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(12),
-              border: Border.all(color: Colors.white.withOpacity(0.1)),
+              border: Border.all(color: colorScheme.onSurface.withOpacity(0.1)),
+              color: Theme.of(context).scaffoldBackgroundColor,
             ),
             child: const Center(
-              child: Icon(LucideIcons.mapPin, color: AppColors.primary),
+              child: Icon(LucideIcons.mapPin, color: AppColors.primary, size: 24),
             ),
           ),
           const SizedBox(height: 16),
+
+          // Card Footer
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
               Row(
+                crossAxisAlignment: CrossAxisAlignment.center,
                 children: [
                   const Icon(LucideIcons.heart, color: AppColors.secondary, size: 20),
-                  const SizedBox(width: 4),
-                  const Text('12', style: TextStyle(color: AppColors.mutedText, fontSize: 12)),
+                  const SizedBox(width: 6),
+                  Text('12', style: textTheme.bodySmall),
                 ],
               ),
-              const Row(
-                children: [
-                  Text('Read Story', style: TextStyle(color: AppColors.primary, fontSize: 12)),
-                  SizedBox(width: 4),
-                  Icon(LucideIcons.arrowRight, color: AppColors.primary, size: 16),
-                ],
+              TextButton(
+                onPressed: () {},
+                child: const Row(
+                  children: [
+                    Text('Read Story', style: TextStyle(color: AppColors.primary, fontSize: 12, fontWeight: FontWeight.bold)),
+                    SizedBox(width: 4),
+                    Icon(LucideIcons.arrowRight, color: AppColors.primary, size: 16),
+                  ],
+                ),
               ),
             ],
           )

@@ -17,6 +17,11 @@ class Trip {
 
   DateTime? endDate;
 
+  String? coverImageUrl; // Added for the travelog grid
+
+  @Index()
+  String? userId; // Added to link trip to a user
+
   @Index()
   bool isSynced = false;
 
