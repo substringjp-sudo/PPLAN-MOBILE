@@ -27,10 +27,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   double? _selectionStartX;
   double? _selectionCurrentX;
 
-  // In a real app this should come from the loaded trip data
-  final DateTime _timelineStartTime = DateTime(2023, 5, 20, 8, 0);
-  final DateTime _timelineEndTime = DateTime(2023, 5, 22, 20, 0);
-
   @override
   void initState() {
     super.initState();
@@ -40,11 +36,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
     WidgetsBinding.instance.addPostFrameCallback((_) {
       final tripIdInt = int.tryParse(widget.tripId);
       if (tripIdInt != null) {
-        ref.read(timelineControllerProvider.notifier).loadTripData(
-              tripIdInt, // Use parsed tripId
-              _timelineStartTime,
-              _timelineEndTime,
-            );
+        ref.read(timelineControllerProvider.notifier).loadTripData(tripIdInt);
       }
     });
   }
@@ -57,10 +49,9 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   }
 
   void _onScroll() {
-    // 3.2. Update center time for Zoom logic (optional state update)
+    // TODO: 3.2. Update center time for Zoom logic (optional state update)
   }
 
-  // 3.4. Auto-fill Handler
   void _handleTimelineDragStart(DragStartDetails details) {
     setState(() {
       _selectionStartX = details.localPosition.dx + _scrollController.offset;
@@ -79,6 +70,10 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   }
 
   void _createTimelineItemFromSelection(TimelineItemType type) {
+    final timelineState = ref.read(timelineControllerProvider);
+    if (timelineState.trip?.startDate == null) return;
+    final timelineStartTime = timelineState.trip!.startDate!;
+
     if (_selectionStartX == null || _selectionCurrentX == null) return;
 
     final startX = _selectionStartX! < _selectionCurrentX!
@@ -90,12 +85,12 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
 
     final startTime = TimelineUtils.pixelToTime(
       startX,
-      _timelineStartTime,
+      timelineStartTime,
       _zoomLevel,
     );
     final endTime = TimelineUtils.pixelToTime(
       endX,
-      _timelineStartTime,
+      timelineStartTime,
       _zoomLevel,
     );
 
@@ -108,7 +103,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
       ..endTime = endTime
       ..createdAt = DateTime.now()
       ..updatedAt = DateTime.now()
-      ..tripId = widget.tripId; // Use widget.tripId
+      ..tripId = widget.tripId;
 
     ref.read(timelineControllerProvider.notifier).addTimelineItem(item);
 
@@ -119,11 +114,14 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   }
 
   void _handleTransportLaneTap(TapUpDetails details) {
-    // Convert tap x position to time
-    final tapX = details.localPosition.dx;
+    final timelineState = ref.read(timelineControllerProvider);
+    if (timelineState.trip?.startDate == null) return;
+    final timelineStartTime = timelineState.trip!.startDate!;
+
+    final tapX = details.localPosition.dx + _scrollController.offset;
     final tapTime = TimelineUtils.pixelToTime(
       tapX,
-      _timelineStartTime,
+      timelineStartTime,
       _zoomLevel,
     );
 
@@ -132,7 +130,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
         .generateAutoFillDraft(tapTime);
 
     if (draft != null) {
-      draft.tripId = widget.tripId; // Assign tripId to draft
+      draft.tripId = widget.tripId;
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text(
@@ -140,7 +138,6 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
           ),
         ),
       );
-      // In real app, open editor with this draft
       ref.read(timelineControllerProvider.notifier).addTimelineItem(draft);
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -155,43 +152,58 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
   Widget build(BuildContext context) {
     final timelineState = ref.watch(timelineControllerProvider);
 
-    // Handle loading and error states
     if (timelineState.isLoading) {
-      return const Scaffold(
-        body: Center(child: CircularProgressIndicator()),
+      return Scaffold(
+        appBar: AppBar(title: Text('Timeline - Trip #${widget.tripId}')),
+        body: const Center(child: CircularProgressIndicator()),
       );
     }
 
+    if (timelineState.trip == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Timeline - Trip #${widget.tripId}')),
+        body: const Center(child: Text('Trip not found.')),
+      );
+    }
+
+    if (timelineState.trip!.startDate == null ||
+        timelineState.trip!.endDate == null) {
+      return Scaffold(
+        appBar: AppBar(title: Text('Timeline - Trip #${widget.tripId}')),
+        body: Center(
+          child: Text(
+              'This trip doesn\'t have a start or end date set. Please edit the trip to add dates.'),
+        ),
+      );
+    }
+
+    final timelineStartTime = timelineState.trip!.startDate!;
+    final timelineEndTime = timelineState.trip!.endDate!;
     final photos = timelineState.photos;
     final items = timelineState.items;
 
     final events = items
-        .where(
-          (item) =>
-              item.type == TimelineItemType.activity ||
-              item.type == TimelineItemType.accommodation ||
-              item.type == TimelineItemType.note,
-        )
+        .where((item) =>
+            item.type == TimelineItemType.activity ||
+            item.type == TimelineItemType.accommodation ||
+            item.type == TimelineItemType.note)
         .toList();
 
     final transports = items
-        .where(
-          (item) =>
-              item.type == TimelineItemType.transport ||
-              item.type == TimelineItemType.flight ||
-              item.type == TimelineItemType.transit,
-        )
+        .where((item) =>
+            item.type == TimelineItemType.transport ||
+            item.type == TimelineItemType.flight ||
+            item.type == TimelineItemType.transit)
         .toList();
 
-    final totalDurationMinutes = _timelineEndTime
-        .difference(_timelineStartTime)
-        .inMinutes;
+    final totalDurationMinutes =
+        timelineEndTime.difference(timelineStartTime).inMinutes;
     final totalWidth = totalDurationMinutes * _zoomLevel;
 
     final activePhoto = photos.isNotEmpty ? photos.first : null;
 
     return Scaffold(
-      appBar: AppBar(title: Text('Timeline - Trip #${widget.tripId}')),
+      appBar: AppBar(title: Text('Timeline - ${timelineState.trip?.name ?? 'Trip'}')),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
           Navigator.push(
@@ -229,7 +241,7 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                                 ...photos.map((photo) {
                                   final x = TimelineUtils.timeToPixel(
                                     photo.timestamp,
-                                    _timelineStartTime,
+                                    timelineStartTime,
                                     _zoomLevel,
                                   );
                                   return Positioned(
@@ -266,8 +278,8 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                         CustomPaint(
                           size: Size(totalWidth, 30),
                           painter: TimeRulerPainter(
-                            startTime: _timelineStartTime,
-                            endTime: _timelineEndTime,
+                            startTime: timelineStartTime,
+                            endTime: timelineEndTime,
                             pixelsPerMinute: _zoomLevel,
                           ),
                         ),
@@ -281,12 +293,12 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                               }
                               final startX = TimelineUtils.timeToPixel(
                                 event.startTime!,
-                                _timelineStartTime,
+                                timelineStartTime,
                                 _zoomLevel,
                               );
                               final endX = TimelineUtils.timeToPixel(
                                 event.endTime!,
-                                _timelineStartTime,
+                                timelineStartTime,
                                 _zoomLevel,
                               );
                               return Positioned(
@@ -317,12 +329,12 @@ class _TimelineScreenState extends ConsumerState<TimelineScreen> {
                                 }
                                 final startX = TimelineUtils.timeToPixel(
                                   transport.startTime!,
-                                  _timelineStartTime,
+                                  timelineStartTime,
                                   _zoomLevel,
                                 );
                                 final endX = TimelineUtils.timeToPixel(
                                   transport.endTime!,
-                                  _timelineStartTime,
+                                  timelineStartTime,
                                   _zoomLevel,
                                 );
                                 return Positioned(

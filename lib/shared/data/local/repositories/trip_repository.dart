@@ -2,35 +2,14 @@ import 'package:isar/isar.dart';
 import 'package:mobile/shared/data/local/collections/trip.dart';
 
 class TripRepository {
-  final Isar isar;
+  final Isar _isar;
 
-  TripRepository(this.isar);
+  TripRepository(this._isar);
 
-  Future<List<Trip>> getAllTrips() async {
-    return await isar.trips.where().sortByUpdatedAtDesc().findAll();
+  Future<Trip?> getTrip(int tripId) async {
+    return await _isar.trips.get(tripId);
   }
 
-  Future<Trip?> getTripById(Id id) async {
-    return await isar.trips.get(id);
-  }
-
-  Future<int> upsertTrip(Trip trip) async {
-    return await isar.writeTxn(() async {
-      trip.updatedAt = DateTime.now();
-      return await isar.trips.put(trip);
-    });
-  }
-
-  Future<bool> deleteTripLocally(Id id) async {
-    return await isar.writeTxn(() async {
-      final trip = await isar.trips.get(id);
-      if (trip == null) return false;
-
-      trip.isDeletedLocally = true;
-      trip.isSynced = false;
-      trip.updatedAt = DateTime.now();
-      await isar.trips.put(trip);
-      return true;
-    });
-  }
+  // Add other trip-related methods here if needed
+  // e.g., getAllTrips, upsertTrip, deleteTrip
 }

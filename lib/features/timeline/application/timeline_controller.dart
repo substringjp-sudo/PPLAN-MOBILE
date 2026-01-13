@@ -2,27 +2,33 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:mobile/features/timeline/domain/models/photo_model.dart';
 import 'package:mobile/features/timeline/application/photo_service.dart';
 import 'package:mobile/shared/data/local/collections/timeline_item.dart';
+import 'package:mobile/shared/data/local/collections/trip.dart';
 import 'package:mobile/shared/data/local/repositories/timeline_repository.dart';
+import 'package:mobile/shared/data/local/repositories/trip_repository.dart';
 import 'package:mobile/shared/data/local/isar_provider.dart';
 
 // State for Timeline Data
 class TimelineState {
+  final Trip? trip;
   final List<Photo> photos;
   final List<TimelineItem> items; // Items from Isar
   final bool isLoading;
 
   TimelineState({
+    this.trip,
     this.photos = const [],
     this.items = const [],
     this.isLoading = false,
   });
 
   TimelineState copyWith({
+    Trip? trip,
     List<Photo>? photos,
     List<TimelineItem>? items,
     bool? isLoading,
   }) {
     return TimelineState(
+      trip: trip ?? this.trip,
       photos: photos ?? this.photos,
       items: items ?? this.items,
       isLoading: isLoading ?? this.isLoading,
@@ -33,25 +39,42 @@ class TimelineState {
 class TimelineController extends StateNotifier<TimelineState> {
   final PhotoService _photoService;
   final TimelineRepository _timelineRepository;
+  final TripRepository _tripRepository;
 
-  TimelineController(this._photoService, this._timelineRepository)
-    : super(TimelineState());
+  TimelineController(this._photoService, this._timelineRepository, this._tripRepository)
+      : super(TimelineState());
 
-  Future<void> loadTripData(
-    int localTripId,
-    DateTime startDate,
-    DateTime endDate,
-  ) async {
+  Future<void> loadTripData(int localTripId) async {
     state = state.copyWith(isLoading: true);
     try {
+      final trip = await _tripRepository.getTrip(localTripId);
+      if (trip == null) {
+        // Handle case where trip is not found
+        state = state.copyWith(isLoading: false);
+        return;
+      }
+
+      if (trip.startDate == null || trip.endDate == null) {
+        // Handle case where trip has no dates
+        state = state.copyWith(isLoading: false, trip: trip);
+        return;
+      }
+
       final photos = await _photoService.fetchAndProcessPhotos(
-        startDate,
-        endDate,
+        trip.startDate!,
+        trip.endDate!,
       );
       final items = await _timelineRepository.getItemsByTrip(localTripId);
-      state = state.copyWith(photos: photos, items: items, isLoading: false);
+
+      state = state.copyWith(
+        trip: trip,
+        photos: photos,
+        items: items,
+        isLoading: false,
+      );
     } catch (e) {
       state = state.copyWith(isLoading: false);
+      // Optionally, handle error state
     }
   }
 
@@ -60,33 +83,29 @@ class TimelineController extends StateNotifier<TimelineState> {
     state = state.copyWith(items: [...state.items, item]);
   }
 
-  // 3.4. Auto-fill Logic
   TimelineItem? generateAutoFillDraft(DateTime clickTime) {
-    // Logic to find gaps
-    // Find closest Item end before clickTime
     DateTime startPoint = state.items
         .where((e) => e.endTime != null && e.endTime!.isBefore(clickTime))
         .map((e) => e.endTime!)
         .fold(
-          DateTime(2000),
+          state.trip?.startDate ?? DateTime(2000),
           (prev, curr) => curr.isAfter(prev) ? curr : prev,
-        ); // Max
+        );
 
-    // Find closest Item start after clickTime
     DateTime endPoint = state.items
         .where((e) => e.startTime != null && e.startTime!.isAfter(clickTime))
         .map((e) => e.startTime!)
         .fold(
-          DateTime(2100),
+          state.trip?.endDate ?? DateTime(2100),
           (prev, curr) => curr.isBefore(prev) ? curr : prev,
-        ); // Min
+        );
 
     if (startPoint.year == 2000 && endPoint.year == 2100) return null;
 
-    final start = startPoint.year == 2000
+    final start = startPoint.isAtSameMomentAs(state.trip?.startDate ?? DateTime(2000))
         ? clickTime.subtract(const Duration(hours: 1))
         : startPoint;
-    final end = endPoint.year == 2100
+    final end = endPoint.isAtSameMomentAs(state.trip?.endDate ?? DateTime(2100))
         ? clickTime.add(const Duration(hours: 1))
         : endPoint;
 
@@ -105,5 +124,9 @@ final timelineControllerProvider =
       final photoService = ref.watch(photoServiceProvider);
       final isar = ref.watch(isarDatabaseProvider).value;
       if (isar == null) throw Exception('Database not ready');
-      return TimelineController(photoService, TimelineRepository(isar));
+      return TimelineController(
+        photoService,
+        TimelineRepository(isar),
+        TripRepository(isar), // Provide TripRepository
+      );
     });

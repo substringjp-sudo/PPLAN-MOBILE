@@ -2,18 +2,17 @@ import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
-import 'package:gap/gap.dart';
 import 'package:go_router/go_router.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:mobile/app/theme.dart';
+import 'package:mobile/features/navigation/presentation/screens/main_navigation_screen.dart';
 import 'package:mobile/shared/data/local/collections/scrap.dart';
 import 'package:mobile/shared/data/local/collections/trip.dart';
 import 'package:mobile/shared/data/local/collections/sync_action.dart';
 import 'package:mobile/shared/data/local/collections/timeline_item.dart';
 import 'package:mobile/shared/data/local/repositories/sync_repository.dart';
 import 'package:mobile/shared/data/local/isar_provider.dart';
-import 'package:mobile/features/scrapbook/application/sharing_service.dart';
 import 'package:mobile/features/scrapbook/presentation/screens/scrap_inbox_screen.dart';
-import 'package:mobile/features/trips/presentation/widgets/trip_creation_bottom_sheet.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:mobile/l10n/app_localizations.dart';
 import 'package:path_provider/path_provider.dart';
@@ -89,7 +88,7 @@ void main() async {
 final _router = GoRouter(
   initialLocation: '/',
   routes: [
-    GoRoute(path: '/', builder: (context, state) => const HomeScreen()),
+    GoRoute(path: '/', builder: (context, state) => const MainNavigationScreen()),
     GoRoute(
       path: '/inbox',
       builder: (context, state) => const ScrapInboxScreen(),
@@ -128,15 +127,8 @@ class PPlanApp extends ConsumerWidget {
             textTheme: GoogleFonts.interTextTheme(),
             useMaterial3: true,
           ),
-          darkTheme: ThemeData(
-            colorScheme: ColorScheme.fromSeed(
-              seedColor: const Color(0xFF6366F1),
-              brightness: Brightness.dark,
-            ),
-            textTheme: GoogleFonts.interTextTheme(ThemeData.dark().textTheme),
-            useMaterial3: true,
-          ),
-          themeMode: ThemeMode.system,
+          darkTheme: darkTheme,
+          themeMode: ThemeMode.dark,
           routerConfig: _router,
           localizationsDelegates: const [
             AppLocalizations.delegate,
@@ -162,54 +154,6 @@ class PPlanApp extends ConsumerWidget {
           ),
         );
       },
-    );
-  }
-}
-
-class HomeScreen extends ConsumerWidget {
-  const HomeScreen({super.key});
-
-  @override
-  Widget build(BuildContext context, WidgetRef ref) {
-    // Initialize the sharing service to start listening for intents
-    ref.watch(sharingServiceProvider);
-
-    return Scaffold(
-      appBar: AppBar(title: const Text('PPLAN Mobile')),
-      body: Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Text('Ready for Scrapping'),
-            const Gap(20),
-            ElevatedButton.icon(
-              onPressed: () => context.push('/inbox'),
-              icon: const Icon(Icons.inbox),
-              label: const Text('Go to Scrap Inbox'),
-            ),
-            const Gap(12),
-            // Add button to navigate to Timeline
-            ElevatedButton.icon(
-              onPressed: () => context.push('/timeline/1'), // Hardcoded tripId '1'
-              icon: const Icon(Icons.timeline),
-              label: const Text('View Timeline (Demo)'),
-            ),
-            const Gap(12),
-            ElevatedButton.icon(
-              onPressed: () {
-                showModalBottomSheet(
-                  context: context,
-                  isScrollControlled: true,
-                  backgroundColor: Colors.transparent,
-                  builder: (context) => const TripCreationBottomSheet(),
-                );
-              },
-              icon: const Icon(Icons.add_road),
-              label: const Text('Create New Trip'),
-            ),
-          ],
-        ),
-      ),
     );
   }
 }
